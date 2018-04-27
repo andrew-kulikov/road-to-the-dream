@@ -1,15 +1,21 @@
-from src import TaskList
+from src import TaskList, User
+import os
+import json
 
 
 class Application:
-    all_tasks = {}
-    all_users = {}
+    users = {}
+    cur_user = None
 
     @staticmethod
-    def get_task(task_id):
-        return Application.all_tasks[task_id]
+    def register_user(name, login, password):
+        if Application.users.get(login, None):
+            raise KeyError('User with this login already exists')
+        Application.users[login] = User(name, login, password)
 
     @staticmethod
-    def add_task(task):
-        Application.all_tasks[task.id] = task
-
+    def save_users():
+        if not os.path.exists('data\\'):
+            os.mkdir('data\\')
+        with open(os.path.join('data', 'users.txt'), 'w', encoding='utf-8') as f:
+            f.write(json.dumps(Application.users))

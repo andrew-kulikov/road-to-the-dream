@@ -4,12 +4,12 @@ from datetime import datetime
 class Task:
     ID = 0
 
-    def __init__(self, parent=None):
+    def __init__(self, parent_id=0):
         self.date = datetime.now()
-        self.sub_tasks = []
+        self.sub_tasks = set()
         self.description = 'Simple task'
         self.tags = []
-        self.parent = parent
+        self.parent_id = parent_id
         self.status = 'In process'
         Task.ID += 1
         self.id = Task.ID
@@ -35,5 +35,8 @@ class Task:
             self.status = status
 
     def add_sub_task(self, sub_task):
-        sub_task.parent = self.id
-        self.sub_tasks.append(sub_task.id)
+        sub_task.parent_id = self.id
+        self.sub_tasks.add(sub_task.id)
+
+    def remove_sub_task(self, sub_task_id):
+        self.sub_tasks.remove(sub_task_id)
