@@ -11,13 +11,15 @@ def menu():
 
 
 def main():
-    app = Application()
+    task_list = TaskList({})
     while True:
         c = menu()
         if c == '0':
             break
         t = Task()
+        task_list.add_task(t)
         print(t)
+    task_list.print_list()
 
 
 if __name__ == '__main__':
