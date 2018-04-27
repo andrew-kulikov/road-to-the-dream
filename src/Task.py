@@ -1,18 +1,20 @@
 from datetime import datetime
+import hashlib
 
 
 class Task:
     ID = 0
 
-    def __init__(self, parent_id=0):
+    def __init__(self, parent_id=0, description='Simple task', tags=None, status='In progress'):
         self.date = datetime.now()
         self.sub_tasks = set()
-        self.description = 'Simple task'
-        self.tags = []
+        self.description = description
+        self.tags = tags
         self.parent_id = parent_id
-        self.status = 'In process'
+        self.status = status
         Task.ID += 1
         self.id = Task.ID
+        self.id = hashlib.sha224(bytes(str(self), 'utf-8')).hexdigest()
 
     def __str__(self):
         s = ''

@@ -3,9 +3,9 @@ from src import TaskList
 
 class User:
     def __init__(self, login='vasya', password='123', name='vasya'):
-        self.login = 'vasya'
-        self.password = '123'
-        self.name = 'vasya'
+        self.login = login
+        self.password = password
+        self.name = name
         self.task_list = TaskList([])
 
     def change_password(self, old_password, new_password):
