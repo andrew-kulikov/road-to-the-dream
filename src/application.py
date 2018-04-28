@@ -28,7 +28,7 @@ class Application:
     def save_users():
         if not os.path.exists('data\\'):
             os.mkdir('data\\')
-        with open(os.path.join('data', 'users.txt'), 'w', encoding='utf-8') as f:
+        with open(os.path.join('data', 'users.pkl'), 'wb+') as f:
             pickle.dump(Application.users, f, pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
@@ -36,8 +36,8 @@ class Application:
         if not os.path.exists('data\\'):
             os.mkdir('data\\')
             Application.users = None
-        else:
-            with open(os.path.join('data', 'users.txt'), 'r', encoding='utf-8') as f:
+        elif os.path.exists(os.path.join('data', 'users.pkl')):
+            with open(os.path.join('data', 'users.pkl'), 'rb+') as f:
                 Application.users = pickle.load(f)
 
     @staticmethod
@@ -51,7 +51,7 @@ class Application:
     def run():
         Application.load_users()
         if not os.path.exists(os.path.join('data', 'cur_user.txt')):
-            open(os.path.join('data', 'cur_users.txt', 'w')).close()
+            open(os.path.join('data', 'cur_users.txt'), 'w').close()
             Application.cur_user = None
         else:
             with open(os.path.join('data', 'cur_users.txt'), 'r', encoding='utf-8') as f:

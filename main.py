@@ -17,9 +17,9 @@ def parse_args():
 
 
 def main():
-    #Application.run()
-    #Application.register_user('vasya', 'vasya', '123')
-    #Application.save_users()
+    Application.run()
+    Application.register_user('vasya', 'vasya', '123')
+    Application.save_users()
     print('kek')
     logged_in = False
     task_list = TaskList({})

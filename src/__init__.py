@@ -1,6 +1,7 @@
+from src.taskList import TaskList
 from src.user import User
-from src.Task import Task
-from src.TaskList import TaskList
+from src.task import Task
+
 from src.application import Application
 
 

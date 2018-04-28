@@ -6,10 +6,10 @@ class User:
         self.login = login
         self._password = password
         self.name = name
-        self.task_list = TaskList([])
+        self.task_list = TaskList({})
 
     def change_password(self, old_password, new_password):
-        if old_password == self.password:
+        if old_password == self._password:
             self._password = new_password
         else:
             raise Exception('Wrong password')
