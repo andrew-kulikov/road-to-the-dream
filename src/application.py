@@ -1,6 +1,7 @@
 from src import TaskList, User
 import os
 import json
+import pickle
 
 
 class Application:
@@ -28,7 +29,7 @@ class Application:
         if not os.path.exists('data\\'):
             os.mkdir('data\\')
         with open(os.path.join('data', 'users.txt'), 'w', encoding='utf-8') as f:
-            f.write(json.dumps(Application.users))
+            pickle.dump(Application.users, f, pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def load_users():
@@ -37,7 +38,7 @@ class Application:
             Application.users = None
         else:
             with open(os.path.join('data', 'users.txt'), 'r', encoding='utf-8') as f:
-                print(json.loads(f.readline()))
+                Application.users = pickle.load(f)
 
     @staticmethod
     def save_task_list(task_list):
@@ -45,3 +46,13 @@ class Application:
             os.mkdir('data\\')
         with open(os.path.join('data', task_list.name + '.txt'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(task_list))
+
+    @staticmethod
+    def run():
+        Application.load_users()
+        if not os.path.exists(os.path.join('data', 'cur_user.txt')):
+            open(os.path.join('data', 'cur_users.txt', 'w')).close()
+            Application.cur_user = None
+        else:
+            with open(os.path.join('data', 'cur_users.txt'), 'r', encoding='utf-8') as f:
+                Application.cur_user = Application.users[f.readline().strip()]

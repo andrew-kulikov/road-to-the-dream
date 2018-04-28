@@ -1,50 +1,28 @@
 from src import Task, TaskList, User, Application
+import argparse
 
 
-def start_menu():
-    print('Hi')
-    print('1) Login')
-    print('2) Register')
-    c = input()
-    return c
+def login():
+    pass
 
 
-def menu():
-    print('Choose operation:')
-    print('1. Add task')
-    print('2. Change task')
-    print('0. Exit')
-    c = input()
-    return c
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers(help='sub-command help')
+    login_parser = subparsers.add_parser('login', help='Log in as user *login*')
+    login_parser.add_argument('--login', help='Your login', default='vasya')
+
+    args = parser.parse_args()
 
 
 def main():
+    #Application.run()
+    #Application.register_user('vasya', 'vasya', '123')
+    #Application.save_users()
+    print('kek')
     logged_in = False
     task_list = TaskList({})
-    while True:
-        if not logged_in:
-            c = start_menu()
-            if c == '1':
-                login = input('Login: ')
-                password = input('Password: ')
-                try:
-                    Application.authorize(login, password)
-                    logged_in = True
-                except KeyError as e:
-                    print(e)
-                    continue
-            elif c == '2':
-                login = input('Login: ')
-                password = input('Password: ')
-                name = input('Name: ')
-        c = menu()
-        if c == '0':
-            break
-        t = Task()
-        task_list.add_task(t)
-        print(t)
-    task_list.print_list()
-    Application.save_task_list(task_list)
 
 
 if __name__ == '__main__':
