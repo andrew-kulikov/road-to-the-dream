@@ -1,5 +1,6 @@
 class TaskList:
-    def __init__(self, tasks=None):
+    def __init__(self, tasks=None, name='Simple_list'):
+        self.name = name
         if tasks:
             self.tasks = tasks
         else:

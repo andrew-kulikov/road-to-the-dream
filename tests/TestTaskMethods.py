@@ -22,6 +22,5 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEquals(child.parent_id, parent.id)
 
 
-
 if __name__ == '__main__':
     unittest.main()
