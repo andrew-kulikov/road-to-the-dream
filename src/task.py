@@ -3,9 +3,10 @@ import hashlib
 
 
 class Task:
-    def __init__(self, parent_id=0, description='Simple task', tags=None, status='In progress'):
+    def __init__(self, parent_id=0, name='Simple task', description='', tags=None, status='In progress'):
         self.date = datetime.now()
         self.sub_tasks = set()
+        self.name = name
         self.description = description
         self.tags = tags
         self.parent_id = parent_id
@@ -15,11 +16,13 @@ class Task:
 
     def __str__(self):
         s = ''
-        s += 'Task #{id}\nStatus: {status}\nDate: {date}\nDescription: {descr}'.format(
+        s += 'Task #{id}\nName: {name}\nStatus: {status}\nDate: {date}\nDescription: {descr}\nTags: {tags}'.format(
             id=self.id,
+            name=self.name,
             status=self.status,
             date=self.date,
-            descr=self.description
+            descr=self.description,
+            tags=self.tags
         )
         return s
 

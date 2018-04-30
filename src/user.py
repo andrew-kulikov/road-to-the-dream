@@ -1,8 +1,10 @@
 from src import TaskList
+import random
 
 
 class User:
     def __init__(self, login='vasya', password='123', name='vasya'):
+        self.id = random.randint(0, 1000)
         self.login = login
         self._password = password
         self.name = name
@@ -23,4 +25,5 @@ class User:
     def complete_task(self, task_id):
         self.task_list.get_task(task_id).status = 'Completed'
 
-
+    def __str__(self):
+        return self.login + ' (' + self.name + ')'

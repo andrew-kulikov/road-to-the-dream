@@ -14,13 +14,15 @@ class Application:
             if Application.users[login].check_password(password):
                 Application.cur_user = Application.users[login]
             else:
-                raise KeyError('User does not exist')
+                raise KeyError('Wrong password')
+        else:
+            raise KeyError('User does not exist')
 
     @staticmethod
     def register_user(name, login, password):
         if Application.users.get(login, None):
             raise KeyError('User with this login already exists')
-        new_user = User(name, login, password)
+        new_user = User(login, password, name)
         Application.users[login] = new_user
         Application.cur_user = new_user
 
@@ -30,6 +32,8 @@ class Application:
             os.mkdir('data\\')
         with open(os.path.join('data', 'users.pkl'), 'wb+') as f:
             pickle.dump(Application.users, f, pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join('data', 'cur_user.txt'), 'w', encoding='utf-8') as f:
+            f.write(Application.cur_user.login)
 
     @staticmethod
     def load_users():
@@ -39,6 +43,7 @@ class Application:
         elif os.path.exists(os.path.join('data', 'users.pkl')):
             with open(os.path.join('data', 'users.pkl'), 'rb+') as f:
                 Application.users = pickle.load(f)
+        Application.load_cur_user()
 
     @staticmethod
     def save_task_list(task_list):
@@ -48,11 +53,14 @@ class Application:
             f.write(json.dumps(task_list))
 
     @staticmethod
-    def run():
-        Application.load_users()
+    def load_cur_user():
         if not os.path.exists(os.path.join('data', 'cur_user.txt')):
-            open(os.path.join('data', 'cur_users.txt'), 'w').close()
+            open(os.path.join('data', 'cur_user.txt'), 'w').close()
             Application.cur_user = None
         else:
-            with open(os.path.join('data', 'cur_users.txt'), 'r', encoding='utf-8') as f:
+            with open(os.path.join('data', 'cur_user.txt'), 'r', encoding='utf-8') as f:
                 Application.cur_user = Application.users[f.readline().strip()]
+
+    @staticmethod
+    def run():
+        Application.load_users()
