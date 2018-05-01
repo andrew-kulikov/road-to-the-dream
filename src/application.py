@@ -1,4 +1,4 @@
-from src import TaskList, User
+from src import TaskList, User, Task
 import os
 import json
 import pickle
@@ -33,7 +33,8 @@ class Application:
         with open(os.path.join('data', 'users.pkl'), 'wb+') as f:
             pickle.dump(Application.users, f, pickle.HIGHEST_PROTOCOL)
         with open(os.path.join('data', 'cur_user.txt'), 'w', encoding='utf-8') as f:
-            f.write(Application.cur_user.login)
+            if Application.cur_user:
+                f.write(Application.cur_user.login)
 
     @staticmethod
     def load_users():
@@ -59,7 +60,24 @@ class Application:
             Application.cur_user = None
         else:
             with open(os.path.join('data', 'cur_user.txt'), 'r', encoding='utf-8') as f:
-                Application.cur_user = Application.users[f.readline().strip()]
+                try:
+                    Application.cur_user = Application.users[f.readline().strip()]
+                except KeyError as e:
+                    Application.cur_user = None
+
+    @staticmethod
+    def add_task(name, description, tags, parent_id=0):
+        task = Task(name=name, description=description, tags=tags, parent_id=parent_id)
+        Application.cur_user.add_task(task)
+
+    @staticmethod
+    def complete_task(task_id):
+        try:
+            Application.cur_user.complete_task(task_id)
+        except KeyError as e:
+            raise e
+        except AttributeError as e:
+            raise e
 
     @staticmethod
     def run():

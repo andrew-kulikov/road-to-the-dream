@@ -28,11 +28,15 @@ class TaskList:
         return self.tasks.get(task_id, None)
 
     def remove_task(self, task_id):
-        if task_id in self.tasks:
-            self.tasks[task_id].status = 'Completed'
-            self.tasks[task_id].parent = None
-            self.tasks[task_id].parent.remove_sub_task(task_id)
+        self.tasks[task_id].status = 'Completed'
+        del self.tasks[task_id]
 
     def add_child(self, task_id, parent_id):
         self.tasks[task_id].parent_id = parent_id
         self.tasks[parent_id].add_sub_task(task_id)
+
+    def __str__(self):
+        s = []
+        for task in self.tasks:
+            s.append(str(self.tasks[task]))
+        return '\n'.join(s)
