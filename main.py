@@ -1,5 +1,6 @@
 from src import Task, TaskList, User, Application
 import argparse
+import jsonpickle
 
 
 def login(args):
@@ -25,7 +26,7 @@ def register(args):
 
 def print_all_users(args=None):
     for user in Application.users:
-        print(user)
+        print(Application.users[user])
 
 
 def print_user(args=None):
@@ -55,11 +56,27 @@ def complete_task(args):
         pass
 
 
+def remove_task(args):
+    task_id = args.id
+    Application.cur_user.remove_task(task_id)
+
+
+def move_task(args):
+    source = args.source
+    dest = args.destination
+    try:
+        Application.move_task(source, dest)
+    except KeyError as e:
+        print(e)
+    except RecursionError as e:
+        print(e)
+
+
 def print_tasks(args):
-    if args.pending:
-        print(Application.cur_user.pending_tasks)
-    elif args.completed:
-        print(Application.cur_user.completed_tasks)
+    if args.completed:
+        Application.cur_user.completed_tasks.print_list()
+    else:
+        Application.cur_user.pending_tasks.print_list()
 
 
 def parse_args():
@@ -98,6 +115,15 @@ def parse_args():
     complete_parser.add_argument('-i', '--id', help='Id of completed task', required=True)
     complete_parser.set_defaults(func=complete_task)
 
+    remove_parser = subparsers.add_parser('remove', help='Remove task #ID')
+    remove_parser.add_argument('-i', '--id', help='Id of task to remove', required=True)
+    remove_parser.set_defaults(func=remove_task)
+
+    move_parser = subparsers.add_parser('move', help='Move task #source to sub tasks of task #destination')
+    move_parser.add_argument('-s', '--source', help='Id of parent task', required=True)
+    move_parser.add_argument('-d', '--destination', help='Id of task you want to move', required=True)
+    move_parser.set_defaults(func=move_task)
+
     task_list_parser = subparsers.add_parser('list', help='Print all your tasks')
     print_group = task_list_parser.add_mutually_exclusive_group()
     print_group.add_argument('-p', '--pending', action='store_true', help='Print all pending tasks')
@@ -110,6 +136,8 @@ def parse_args():
 
 def main():
     Application.run()
+    #print(jsonpickle.encode(Application.cur_user))
+
     parse_args()
     Application.save_users()
 

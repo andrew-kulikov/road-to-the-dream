@@ -1,3 +1,6 @@
+from select import select
+
+
 class TaskList:
     def __init__(self, tasks=None, name='Simple_list'):
         self.name = name
@@ -18,17 +21,28 @@ class TaskList:
         return good_tasks
 
     def print_list(self):
+        used = {}
+
         def _print(tasks, level):
+            tasks = [self.tasks[key] for key in tasks]
             for task in tasks:
-                print('\t' * level, str(task))
-                _print(task.sub_tasks, level + 1)
-        _print([self.tasks[key] for key in self.tasks], 0)
+                if task and not used.get(task.id, False):
+                    used[task.id] = True
+                    print('   ' * level, str(task))
+                    _print(task.sub_tasks, level + 1)
+        _print(self.tasks, 0)
 
     def get_task(self, task_id):
         return self.tasks.get(task_id, None)
 
-    def remove_task(self, task_id):
+    def complete_task(self, task_id):
         self.tasks[task_id].status = 'Completed'
+        del self.tasks[task_id]
+
+    def remove_task(self, task_id):
+        tasks = list(self.tasks[task_id].sub_tasks)
+        for task in tasks:
+            self.remove_task(task)
         del self.tasks[task_id]
 
     def add_child(self, task_id, parent_id):

@@ -1,5 +1,6 @@
 import unittest
 from src import Task, TaskList, User
+import random
 
 
 class TestTaskMethods(unittest.TestCase):
@@ -12,7 +13,7 @@ class TestTaskMethods(unittest.TestCase):
         size = 10000
         ids = set()
         for i in range(size):
-            task = Task()
+            task = Task(name=str(random.randint(0, 100000)), description=str(random.random()))
             ids.add(task.id)
         self.assertEquals(len(ids), size)
 

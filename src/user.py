@@ -28,7 +28,7 @@ class User:
     def complete_task(self, task_id):
         task_to_complete = self.pending_tasks.get_task(task_id)
         self.completed_tasks.add_task(task_to_complete)
-        self.pending_tasks.remove_task(task_id)
+        self.pending_tasks.complete_task(task_id)
         try:
             tasks = task_to_complete.sub_tasks
         except KeyError as e:
@@ -39,6 +39,22 @@ class User:
             return
         for task in tasks:
             self.complete_task(task)
+
+    def remove_task(self, task_id):
+        if task_id in self.pending_tasks.tasks:
+            self.pending_tasks.remove_task(task_id)
+        elif task_id in self.completed_tasks.tasks:
+            self.completed_tasks.remove_task(task_id)
+
+    def move_task(self, source_id, destination_id):
+        if source_id not in self.pending_tasks.tasks or destination_id not in self.pending_tasks.tasks:
+            raise KeyError('No task with current id')
+        cur_id = destination_id
+        while cur_id:
+            cur_id = self.pending_tasks.tasks[cur_id].parent_id
+            if cur_id == source_id:
+                raise RecursionError('Destination task is one of the source task sub tasks')
+        self.pending_tasks.add_child(source_id, destination_id)
 
     def __str__(self):
         return self.login + ' (' + self.name + ')'

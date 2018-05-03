@@ -80,5 +80,14 @@ class Application:
             raise e
 
     @staticmethod
+    def move_task(source_id, destination_id):
+        try:
+            Application.cur_user.move_task(source_id, destination_id)
+        except KeyError as e:
+            raise e
+        except RecursionError as e:
+            raise e
+
+    @staticmethod
     def run():
         Application.load_users()

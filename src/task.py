@@ -12,17 +12,16 @@ class Task:
         self.parent_id = parent_id
         self.status = status
         self.id = 0
-        self.id = hashlib.sha224(bytes(str(self), 'utf-8')).hexdigest()
+        self.id = hashlib.sha224(bytes(str(self), 'utf-8')).hexdigest()[:10]
 
     def __str__(self):
         s = ''
-        s += 'Task #{id}\nName: {name}\nStatus: {status}\nDate: {date}\nDescription: {descr}\nTags: {tags}'.format(
+        s += 'Task #{id} | {name} | {status} | {date}'.format(
             id=self.id,
             name=self.name,
             status=self.status,
             date=self.date,
-            descr=self.description,
-            tags=self.tags
+            descr=self.description
         )
         return s
 
@@ -36,9 +35,8 @@ class Task:
         if status:
             self.status = status
 
-    def add_sub_task(self, sub_task):
-        sub_task.parent_id = self.id
-        self.sub_tasks.add(sub_task.id)
+    def add_sub_task(self, sub_task_id):
+        self.sub_tasks.add(sub_task_id)
 
     def remove_sub_task(self, sub_task_id):
         self.sub_tasks.remove(sub_task_id)
