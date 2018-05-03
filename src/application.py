@@ -1,11 +1,13 @@
-from src import TaskList, User, Task
+from src import TaskList, User, Task, Project
 import os
 import json
 import pickle
+import jsonpickle
 
 
 class Application:
     users = {}
+    projects = {}
     cur_user = None
 
     @staticmethod
@@ -45,6 +47,22 @@ class Application:
             with open(os.path.join('data', 'users.pkl'), 'rb+') as f:
                 Application.users = pickle.load(f)
         Application.load_cur_user()
+
+    @staticmethod
+    def load_projects():
+        folder = os.path.join('data', 'projects')
+        if not os.path.exists('data'):
+            os.mkdir('data')
+            Application.projects = None
+        elif os.path.exists(folder):
+            files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+            for file_name in files:
+                with open(os.path.join(folder, file_name), 'rb+') as f:
+                    try:
+                        project = jsonpickle.decode(f.readline())
+                        Application.projects[project.id] = project
+                    except Exception:
+                        continue
 
     @staticmethod
     def save_task_list(task_list):

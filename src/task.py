@@ -3,14 +3,14 @@ import hashlib
 
 
 class Task:
-    def __init__(self, parent_id=0, name='Simple task', description='', tags=None, status='In progress'):
+    def __init__(self, parent_id=0, name='Simple task', description='', tags=None):
         self.date = datetime.now()
         self.sub_tasks = set()
         self.name = name
         self.description = description
         self.tags = tags
         self.parent_id = parent_id
-        self.status = status
+        self.status = 'In progress'
         self.id = 0
         self.id = hashlib.sha224(bytes(str(self), 'utf-8')).hexdigest()[:10]
 
