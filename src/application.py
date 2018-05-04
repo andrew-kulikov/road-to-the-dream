@@ -1,13 +1,15 @@
-from src import TaskList, User, Task, Project
+from src import TaskList, User, Task, Project, ProjectTask
 import os
 import json
 import pickle
 import jsonpickle
+import pathlib
 
 
 class Application:
     users = {}
     projects = {}
+    project = None
     cur_user = None
 
     @staticmethod
@@ -65,6 +67,36 @@ class Application:
                         continue
 
     @staticmethod
+    def load_project(project_id):
+        folder = os.path.join('data', 'projects')
+        if not os.path.exists(folder):
+            pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+            Application.project = None
+        elif os.path.exists(os.path.join(folder, str(project_id) + '.json')):
+            with open(os.path.join(folder, str(project_id) + '.json'), 'r+') as f:
+                try:
+                    project = jsonpickle.decode(f.readline())
+                    Application.project = project
+                except Exception as e:
+                    Application.project = None
+                    raise e
+
+    @staticmethod
+    def save_project():
+        folder = os.path.join('data', 'projects')
+        if not os.path.exists(folder):
+            pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+        if Application.project:
+            with open(os.path.join(folder, str(Application.project.id) + '.json'), 'w+') as f1, \
+                    open(os.path.join(folder, 'last_project.json'), 'w+') as f2:
+                try:
+                    f1.write(jsonpickle.encode(Application.project))
+                    f2.write(jsonpickle.encode(Application.project))
+                except Exception as e:
+                    Application.project = None
+                    raise e
+
+    @staticmethod
     def save_task_list(task_list):
         if not os.path.exists('data\\'):
             os.mkdir('data\\')
@@ -89,6 +121,27 @@ class Application:
         Application.cur_user.add_task(task)
 
     @staticmethod
+    def add_project(project_name):
+        Application.project = Project(project_name)
+
+    @staticmethod
+    def add_project_task(name, description, tags, parent_id=0, project_id=0):
+        if not project_id and not Application.project:
+            raise KeyError('Project is not loaded')
+        elif not project_id and Application.project or \
+                project_id and Application.project and Application.project.id == project_id:
+            task = ProjectTask(name=name, description=description, tags=tags, parent_id=parent_id, created_user=Application.cur_user.login)
+            Application.project.add_task(task, Application.cur_user.login)
+            Application.cur_user.projects.add(project_id)
+        elif project_id:
+            Application.load_project(project_id)
+            if Application.project:
+                task = ProjectTask(name=name, description=description, tags=tags, parent_id=parent_id, created_user=Application.cur_user.login)
+                Application.project.add_task(task, Application.cur_user.login)
+                Application.cur_user.projects.add(project_id)
+                # raise exceptions
+
+    @staticmethod
     def complete_task(task_id):
         try:
             Application.cur_user.complete_task(task_id)
@@ -107,5 +160,44 @@ class Application:
             raise e
 
     @staticmethod
+    def complete_project_task(task_id, project_id=0):
+        try:
+            if project_id:
+                Application.load_project(project_id)
+            Application.project.complete_task(task_id, Application.cur_user.login)
+        except Exception as e:
+            raise e
+
+    @staticmethod
+    def move_project_task(source_id, destination_id, project_id=0):
+        try:
+            if project_id:
+                Application.load_project(project_id)
+            Application.project.move_task(source_id, destination_id)
+        except Exception as e:
+            raise e
+
+    @staticmethod
+    def get_projects():
+        folder = os.path.join('data', 'projects')
+        projects = []
+        if not os.path.exists('data'):
+            os.mkdir('data')
+            return ''
+        elif os.path.exists(folder):
+            files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+            for file_name in files:
+                if file_name == 'last_project.json':
+                    continue
+                with open(os.path.join(folder, file_name), 'r+') as f:
+                    try:
+                        project = jsonpickle.decode(f.readline())
+                        projects.append(str(project))
+                    except Exception:
+                        continue
+        return projects
+
+    @staticmethod
     def run():
+        Application.load_project('last_project')
         Application.load_users()

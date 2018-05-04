@@ -8,6 +8,7 @@ class User:
         self.login = login
         self._password = password
         self.name = name
+        self.projects = set()
         self.pending_tasks = TaskList({})
         self.completed_tasks = TaskList({})
 

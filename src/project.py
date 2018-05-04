@@ -60,7 +60,5 @@ class Project:
             pending=len(self.pending_tasks.tasks),
             completed=len(self.completed_tasks.tasks)
         )
-        s += 'Users: '
-        for user in self.users:
-            s += user + '\n'
+        s += 'Users: ' + ', '.join(self.users)
         return s
