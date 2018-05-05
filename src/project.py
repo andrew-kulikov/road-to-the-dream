@@ -55,7 +55,8 @@ class Project:
 
     def __str__(self):
         s = ''
-        s += 'Name: {name}\nPending tasks amount: {pending}\nCompleted tasks amount: {completed}\n'.format(
+        s += 'Id: {id}\nName: {name}\nPending tasks amount: {pending}\nCompleted tasks amount: {completed}\n'.format(
+            id=self.id,
             name=self.name,
             pending=len(self.pending_tasks.tasks),
             completed=len(self.completed_tasks.tasks)

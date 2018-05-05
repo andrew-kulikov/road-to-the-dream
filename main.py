@@ -91,9 +91,11 @@ def add_project_task(args):
 
 
 def complete_project_task(args):
-    id = args.id
+    # raise more exceptions
+    project_id = args.id
+    task_id = args.task_id
     try:
-        Application.complete_project_task(id)
+        Application.complete_project_task(task_id, project_id)
         print('Completed successfully')
     except KeyError as e:
         print('No such id')
@@ -119,22 +121,40 @@ def move_project_task(args):
 
 def print_tasks(args):
     if args.completed:
-        Application.cur_user.completed_tasks.print_list()
+        for task in Application.cur_user.completed_tasks.print_list():
+            print(task)
     else:
-        Application.cur_user.pending_tasks.print_list()
+        for task in Application.cur_user.pending_tasks.print_list():
+            print(task)
 
 
 def print_project_tasks(args):
     if args.completed:
-        Application.project.completed_tasks.print_list()
+        for task in Application.project.completed_tasks.print_list():
+            print(task)
     else:
-        Application.project.pending_tasks.print_list()
+        for task in Application.project.pending_tasks.print_list():
+            print(task)
+
+
+def print_project_users(args):
+    project_id = args.id
+    for user in Application.get_project_users(project_id):
+        print(user)
 
 
 def print_projects(args):
     for project in Application.get_projects():
         print(project)
         print('-'*20)
+
+
+def open_project(args):
+    id = args.id
+    try:
+        Application.load_project(id)
+    except Exception as e:
+        print(e)
 
 
 def parse_args():
@@ -192,9 +212,13 @@ def parse_args():
 
     project_subparsers = projects_parser.add_subparsers(help='sub-command help')
 
-    project_add_parser = project_subparsers.add_parser('create', help='Create new project')
-    project_add_parser.add_argument('-n', '--name', help='Project name', default='Simple project', required=True)
-    project_add_parser.set_defaults(func=add_project)
+    project_add_parser = project_subparsers.add_parser('open', help='Open new project')
+    project_add_parser.add_argument('id', help='Project id')
+    project_add_parser.set_defaults(func=open_project)
+
+    project_open_parser = project_subparsers.add_parser('create', help='Create new project')
+    project_open_parser.add_argument('-n', '--name', help='Project name', default='Simple project', required=True)
+    project_open_parser.set_defaults(func=add_project)
 
     project_add_parser = project_subparsers.add_parser('add', help='Add task to project task list')
     project_add_parser.add_argument('-i', '--id', help='Project id', default=0)
@@ -205,22 +229,25 @@ def parse_args():
     project_add_parser.set_defaults(func=add_project_task)
 
     project_complete_parser = project_subparsers.add_parser('complete', help='Complete project task #ID')
-    project_complete_parser.add_argument('-i', '--id', help='Id of completed task', required=True)
+    project_complete_parser.add_argument('-i', '--id', help='Project id', default=0)
+    project_complete_parser.add_argument('task_id', help='Id of completed task')
     project_complete_parser.set_defaults(func=complete_project_task)
 
     project_remove_parser = project_subparsers.add_parser('remove', help='Remove task #ID from project')
-    project_remove_parser.add_argument('-i', '--id', help='Id of task to remove', required=True)
+    project_remove_parser.add_argument('id', help='Id of task to remove')
     project_remove_parser.set_defaults(func=remove_project_task)
 
     project_move_parser = project_subparsers.add_parser(
         'move',
         help='Move project task #source to sub tasks of task #destination'
     )
+    project_move_parser.add_argument('-i', '--id', help='Project id', default=0)
     project_move_parser.add_argument('-s', '--source', help='Id of parent task', required=True)
     project_move_parser.add_argument('-d', '--destination', help='Id of task you want to move', required=True)
     project_move_parser.set_defaults(func=move_project_task)
 
     project_task_list_parser = project_subparsers.add_parser('list_tasks', help='Print tasks in project #id')
+    project_task_list_parser.add_argument('-i', '--id', help='Project id', default=0)
     project_print_group = project_task_list_parser.add_mutually_exclusive_group()
     project_print_group.add_argument('-p', '--pending', action='store_true', help='Print all pending tasks')
     project_print_group.add_argument('-c', '--completed', action='store_true', help='Print all completed tasks')
@@ -229,8 +256,13 @@ def parse_args():
     project_list_parser = project_subparsers.add_parser('list', help='Print all projects')
     project_list_parser.set_defaults(func=print_projects)
 
+    project_users_parser = project_subparsers.add_parser('users', help='Print all users in project')
+    project_users_parser.add_argument('-i', '--id', help='Project id', default=0)
+    project_users_parser.set_defaults(func=print_project_users)
+
     args = parser.parse_args()
-    args.func(args)
+    if 'func' in args:
+        args.func(args)
 
 
 def main():

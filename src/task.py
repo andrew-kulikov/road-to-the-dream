@@ -5,7 +5,7 @@ import hashlib
 class Task:
     def __init__(self, parent_id=0, name='Simple task', description='', tags=None):
         self.date = datetime.now()
-        self.sub_tasks = set()
+        self.sub_tasks = []
         self.name = name
         self.description = description
         self.tags = tags
@@ -36,7 +36,8 @@ class Task:
             self.status = status
 
     def add_sub_task(self, sub_task_id):
-        self.sub_tasks.add(sub_task_id)
+        if sub_task_id not in self.sub_tasks:
+            self.sub_tasks.append(sub_task_id)
 
     def remove_sub_task(self, sub_task_id):
         self.sub_tasks.remove(sub_task_id)

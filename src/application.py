@@ -72,6 +72,7 @@ class Application:
         if not os.path.exists(folder):
             pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
             Application.project = None
+            raise FileNotFoundError('No project with current id')
         elif os.path.exists(os.path.join(folder, str(project_id) + '.json')):
             with open(os.path.join(folder, str(project_id) + '.json'), 'r+') as f:
                 try:
@@ -80,6 +81,8 @@ class Application:
                 except Exception as e:
                     Application.project = None
                     raise e
+        else:
+            raise FileNotFoundError('No project with current id')
 
     @staticmethod
     def save_project():
@@ -196,6 +199,19 @@ class Application:
                     except Exception:
                         continue
         return projects
+
+    @staticmethod
+    def get_project_users(project_id=0):
+        if project_id:
+            try:
+                Application.load_project(project_id)
+            except Exception as e:
+                raise e
+        users = []
+        for user_id in Application.project.users:
+            if user_id in Application.users:
+                users.append(str(Application.users[user_id]))
+        return users
 
     @staticmethod
     def run():
