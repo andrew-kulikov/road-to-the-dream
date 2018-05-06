@@ -14,12 +14,15 @@ class Project:
         self.users.add(user_login)
 
     def add_task(self, task, created_user_login):
+        try:
+            self.pending_tasks.add_task(task)
+            if task.parent_id:
+                self.pending_tasks.add_child(task.id, task.parent_id)
+        except Exception as e:
+            raise e
         if created_user_login not in self.users:
             self.add_user(created_user_login)
         task.created_user = created_user_login
-        self.pending_tasks.add_task(task)
-        if task.parent_id:
-            self.pending_tasks.add_child(task.id, task.parent_id)
 
     def complete_task(self, task_id, completed_user):
         task_to_complete = self.pending_tasks.get_task(task_id)
@@ -28,9 +31,7 @@ class Project:
         self.pending_tasks.complete_task(task_id)
         try:
             tasks = task_to_complete.sub_tasks
-        except KeyError as e:
-            raise e
-        except AttributeError as e:
+        except Exception as e:
             raise e
         if not tasks:
             return
@@ -51,7 +52,10 @@ class Project:
             cur_id = self.pending_tasks.tasks[cur_id].parent_id
             if cur_id == source_id:
                 raise RecursionError('Destination task is one of the source task sub tasks')
-        self.pending_tasks.add_child(source_id, destination_id)
+        try:
+            self.pending_tasks.add_child(source_id, destination_id)
+        except Exception as e:
+            raise e
 
     def __str__(self):
         s = ''

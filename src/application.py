@@ -119,21 +119,30 @@ class Application:
                     Application.cur_user = None
 
     @staticmethod
-    def add_task(name, description, tags, parent_id=0):
-        task = Task(name=name, description=description, tags=tags, parent_id=parent_id)
-        Application.cur_user.add_task(task)
+    def add_task(name, description, tags, priority=0, parent_id=0):
+        task = Task(name=name, description=description, tags=tags, parent_id=parent_id, priority=priority)
+        try:
+            Application.cur_user.add_task(task)
+        except Exception as e:
+            raise e
 
     @staticmethod
     def add_project(project_name):
         Application.project = Project(project_name)
 
     @staticmethod
-    def add_project_task(name, description, tags, parent_id=0, project_id=0):
+    def add_project_task(name, description, tags, parent_id=0, project_id=0, priority=0):
         if not project_id and not Application.project:
             raise KeyError('Project is not loaded')
         elif not project_id and Application.project or \
                 project_id and Application.project and Application.project.id == project_id:
-            task = ProjectTask(name=name, description=description, tags=tags, parent_id=parent_id, created_user=Application.cur_user.login)
+            task = ProjectTask(
+                name=name,
+                description=description,
+                tags=tags,
+                parent_id=parent_id,
+                created_user=Application.cur_user.login,
+                priority=priority)
             Application.project.add_task(task, Application.cur_user.login)
             Application.cur_user.projects.add(project_id)
         elif project_id:
@@ -143,6 +152,27 @@ class Application:
                 Application.project.add_task(task, Application.cur_user.login)
                 Application.cur_user.projects.add(project_id)
                 # raise exceptions
+
+    @staticmethod
+    def get_task_list(list_type='pending'):
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
+        if list_type == 'pending':
+            return Application.cur_user.pending_tasks.print_list()
+        elif list_type == 'completed':
+            return Application.cur_user.completed_tasks.print_list()
+
+    @staticmethod
+    def get_project_task_list(list_type='pending', project_id=0):
+        if project_id:
+            try:
+                Application.load_project(project_id)
+            except Exception as e:
+                raise e
+        if list_type == 'pending':
+            return Application.project.pending_tasks.print_list()
+        elif list_type == 'completed':
+            return Application.project.completed_tasks.print_list()
 
     @staticmethod
     def complete_task(task_id):
@@ -214,6 +244,32 @@ class Application:
         return users
 
     @staticmethod
+    def sort_user_tasks(sort_type):
+        sorts = {
+            'name': lambda task: task.name,
+            'date': lambda task: task.date,
+            'priority': lambda task: task.priority}
+        # make priority field
+        if sort_type in sorts:
+            Application.cur_user.pending_tasks.sort_by(sorts[sort_type])
+        else:
+            raise KeyError('No such sort type')
+
+    @staticmethod
+    def sort_project_tasks(sort_type, project_id=0):
+        if project_id:
+            Application.load_project(project_id)
+        sorts = {
+            'name': lambda task: task.name,
+            'date': lambda task: task.date,
+            'priority': lambda task: task.priority}
+        # make priority field
+        if sort_type in sorts:
+            Application.project.pending_tasks.sort_by(sorts[sort_type])
+        else:
+            raise KeyError('No such sort type')
+
+    @staticmethod
     def run():
-        Application.load_project('last_project')
         Application.load_users()
+        Application.load_project('last_project')

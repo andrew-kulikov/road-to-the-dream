@@ -38,8 +38,9 @@ def add_task(args):
     tags = args.tags
     description = args.description
     parent_id = args.parent
+    priority = args.priority
     try:
-        Application.add_task(name, description, tags, parent_id)
+        Application.add_task(name, description, tags, priority, parent_id)
         print('Added successfully')
     except Exception as e:
         print(e)
@@ -83,8 +84,9 @@ def add_project_task(args):
     tags = args.tags
     description = args.description
     parent_id = args.parent
+    priority = args.priority
     try:
-        Application.add_project_task(name, description, tags, parent_id, project_id=project_id)
+        Application.add_project_task(name, description, tags, parent_id, priority=priority, project_id=project_id)
         print('Added successfully')
     except Exception as e:
         print(e)
@@ -120,21 +122,26 @@ def move_project_task(args):
 
 
 def print_tasks(args):
+    mode = 'pending'
     if args.completed:
-        for task in Application.cur_user.completed_tasks.print_list():
+        mode = 'completed'
+    try:
+        for task in Application.get_task_list(mode):
             print(task)
-    else:
-        for task in Application.cur_user.pending_tasks.print_list():
-            print(task)
+    except AttributeError as e:
+        print(e)
 
 
 def print_project_tasks(args):
+    mode = 'pending'
+    id = args.id
     if args.completed:
-        for task in Application.project.completed_tasks.print_list():
+        mode = 'completed'
+    try:
+        for task in Application.get_project_task_list(mode, id):
             print(task)
-    else:
-        for task in Application.project.pending_tasks.print_list():
-            print(task)
+    except Exception as e:
+        print(e)
 
 
 def print_project_users(args):
@@ -153,6 +160,34 @@ def open_project(args):
     id = args.id
     try:
         Application.load_project(id)
+    except Exception as e:
+        print(e)
+
+
+def sort_tasks(args):
+    mode = ''
+    if args.name:
+        mode = 'name'
+    elif args.date:
+        mode = 'date'
+    elif args.priority:
+        mode = 'priority'
+    try:
+        Application.sort_user_tasks(mode)
+    except Exception as e:
+        print(e)
+
+
+def sort_project_tasks(args):
+    mode = ''
+    if args.name:
+        mode = 'name'
+    elif args.date:
+        mode = 'date'
+    elif args.priority:
+        mode = 'priority'
+    try:
+        Application.sort_project_tasks(mode)
     except Exception as e:
         print(e)
 
@@ -186,6 +221,7 @@ def parse_args():
     add_parser.add_argument('-n', '--name', help='Task name', default='Simple task', required=True)
     add_parser.add_argument('-d', '--description', help='Task description', default='', required=False)
     add_parser.add_argument('-t', '--tags', help='Task tags', nargs='+', required=False)
+    add_parser.add_argument('-r', '--priority', type=int, help='Task priority (0-9). 0 - highest priority', default=0)
     add_parser.add_argument('-p', '--parent', help='ID of parent task', default=0)
     add_parser.set_defaults(func=add_task)
 
@@ -207,6 +243,13 @@ def parse_args():
     print_group.add_argument('-p', '--pending', action='store_true', help='Print all pending tasks')
     print_group.add_argument('-c', '--completed', action='store_true', help='Print all completed tasks')
     task_list_parser.set_defaults(func=print_tasks)
+
+    task_sort_parser = subparsers.add_parser('sort', help='Sort tasks in specific order')
+    sort_group = task_sort_parser.add_mutually_exclusive_group()
+    sort_group.add_argument('-n', '--name', action='store_true', help='Sort tasks by name')
+    sort_group.add_argument('-d', '--date', action='store_true', help='Sort tasks by date')
+    sort_group.add_argument('-p', '--priority', action='store_true', help='Sort tasks by priority')
+    task_sort_parser.set_defaults(func=sort_tasks)
 
     projects_parser = subparsers.add_parser('project', help='Manage projects')
 
@@ -256,6 +299,13 @@ def parse_args():
     project_list_parser = project_subparsers.add_parser('list', help='Print all projects')
     project_list_parser.set_defaults(func=print_projects)
 
+    project_task_sort_parser = subparsers.add_parser('sort', help='Sort project tasks in specific order')
+    project_sort_group = project_task_sort_parser.add_mutually_exclusive_group()
+    project_sort_group.add_argument('-n', '--name', action='store_true', help='Sort tasks by name')
+    project_sort_group.add_argument('-d', '--date', action='store_true', help='Sort tasks by date')
+    project_sort_group.add_argument('-p', '--priority', action='store_true', help='Sort tasks by priority')
+    project_task_sort_parser.set_defaults(func=sort_project_tasks)
+
     project_users_parser = project_subparsers.add_parser('users', help='Print all users in project')
     project_users_parser.add_argument('-i', '--id', help='Project id', default=0)
     project_users_parser.set_defaults(func=print_project_users)
@@ -266,7 +316,10 @@ def parse_args():
 
 
 def main():
-    Application.run()
+    try:
+        Application.run()
+    except FileNotFoundError:
+        pass
     parse_args()
     Application.save_users()
     Application.save_project()
