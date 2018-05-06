@@ -2,10 +2,11 @@ from src import Task
 
 
 class ProjectTask(Task):
-    def __init__(self, parent_id=0, name='Simple task', description='', tags=None, created_user=None, priority=0):
+    def __init__(self, parent_id=0, name='Simple task', description='',
+                 tags=None, created_user=None, priority=0, end_date=None, period=None):
         self.created_user = created_user
         self.completed_user = None
-        super().__init__(parent_id, name, description, tags, priority)
+        super().__init__(parent_id, name, description, tags, priority, end_date, period)
 
     def __str__(self):
         s = super().__str__()

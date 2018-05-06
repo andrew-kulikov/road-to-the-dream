@@ -1,6 +1,3 @@
-from select import select
-
-
 class TaskList:
     def __init__(self, tasks=None, name='Simple_list'):
         self.name = name
@@ -16,8 +13,6 @@ class TaskList:
         self.root_tasks = [task_id for task_id in self.tasks if self.tasks[task_id].parent_id == 0]
 
     def add_task(self, task):
-        if task.parent_id and task.parent_id not in self.tasks:
-            raise KeyError('Wrong parent task id')
         self.tasks[task.id] = task
         if task.id not in self.root_tasks and task.parent_id == 0:
             self.root_tasks.append(task.id)
@@ -48,6 +43,13 @@ class TaskList:
     def get_task(self, task_id):
         return self.tasks.get(task_id, None)
 
+    def get_failed(self):
+        failed = []
+        for task_id in self.tasks:
+            if self.tasks[task_id].check_fail():
+                failed.append(task_id)
+        return failed
+
     def complete_task(self, task_id):
         if self.tasks[task_id].period:
             self.tasks[task_id].date += self.tasks[task_id].period
@@ -58,6 +60,8 @@ class TaskList:
             self.root_tasks.remove(task_id)
 
     def remove_task(self, task_id):
+        if task_id not in self.tasks:
+            return
         tasks = list(self.tasks[task_id].sub_tasks)
         for task in tasks:
             self.remove_task(task)

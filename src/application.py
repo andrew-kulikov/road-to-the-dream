@@ -1,9 +1,9 @@
 from src import TaskList, User, Task, Project, ProjectTask
 import os
 import json
-import pickle
 import jsonpickle
 import pathlib
+import datetime
 
 
 class Application:
@@ -34,8 +34,8 @@ class Application:
     def save_users():
         if not os.path.exists('data\\'):
             os.mkdir('data\\')
-        with open(os.path.join('data', 'users.pkl'), 'wb+') as f:
-            pickle.dump(Application.users, f, pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join('data', 'users.json'), 'w+') as f:
+            f.write(jsonpickle.encode(Application.users))
         with open(os.path.join('data', 'cur_user.txt'), 'w', encoding='utf-8') as f:
             if Application.cur_user:
                 f.write(Application.cur_user.login)
@@ -45,9 +45,9 @@ class Application:
         if not os.path.exists('data\\'):
             os.mkdir('data\\')
             Application.users = None
-        elif os.path.exists(os.path.join('data', 'users.pkl')):
-            with open(os.path.join('data', 'users.pkl'), 'rb+') as f:
-                Application.users = pickle.load(f)
+        elif os.path.exists(os.path.join('data', 'users.json')):
+            with open(os.path.join('data', 'users.json'), 'r+') as f:
+                Application.users = jsonpickle.decode(f.readline())
         Application.load_cur_user()
 
     @staticmethod
@@ -119,39 +119,53 @@ class Application:
                     Application.cur_user = None
 
     @staticmethod
-    def add_task(name, description, tags, priority=0, parent_id=0):
-        task = Task(name=name, description=description, tags=tags, parent_id=parent_id, priority=priority)
-        try:
-            Application.cur_user.add_task(task)
-        except Exception as e:
-            raise e
+    def add_task(name, description, tags, priority=0, parent_id=0, deadline=None, period=None):
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
+        task = Task(name=name, description=description, tags=tags, period=period,
+                    parent_id=parent_id, priority=priority, end_date=deadline)
+        Application.cur_user.add_task(task)
+
+    @staticmethod
+    def edit_task(task_id, name, description, tags,
+                  priority=0, deadline=None, period=None):
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
+        Application.cur_user.edit_task(task_id=task_id, name=name, description=description, tags=tags,
+                                       priority=priority, deadline=deadline, period=period)
 
     @staticmethod
     def add_project(project_name):
         Application.project = Project(project_name)
 
     @staticmethod
-    def add_project_task(name, description, tags, parent_id=0, project_id=0, priority=0):
+    def add_project_task(name, description, tags, parent_id=0, project_id=0, priority=0, deadline=None, period=None):
         if not project_id and not Application.project:
             raise KeyError('Project is not loaded')
         elif not project_id and Application.project or \
                 project_id and Application.project and Application.project.id == project_id:
-            task = ProjectTask(
-                name=name,
-                description=description,
-                tags=tags,
-                parent_id=parent_id,
-                created_user=Application.cur_user.login,
-                priority=priority)
+            task = ProjectTask(name=name, description=description, tags=tags,
+                               parent_id=parent_id, created_user=Application.cur_user.login,
+                               priority=priority, end_date=deadline, period=period)
             Application.project.add_task(task, Application.cur_user.login)
             Application.cur_user.projects.add(project_id)
         elif project_id:
             Application.load_project(project_id)
             if Application.project:
-                task = ProjectTask(name=name, description=description, tags=tags, parent_id=parent_id, created_user=Application.cur_user.login)
+                task = ProjectTask(name=name, description=description, tags=tags,
+                                   parent_id=parent_id, created_user=Application.cur_user.login,
+                                   priority=priority, end_date=deadline, period=period)
                 Application.project.add_task(task, Application.cur_user.login)
                 Application.cur_user.projects.add(project_id)
                 # raise exceptions
+
+    @staticmethod
+    def edit_project_task(task_id, name, description, tags,
+                          project_id=0, priority=0, deadline=None, period=None):
+        if project_id:
+            Application.load_project(project_id)
+        Application.project.edit_task(task_id=task_id, name=name, description=description, tags=tags,
+                                      priority=priority, deadline=deadline, period=period)
 
     @staticmethod
     def get_task_list(list_type='pending'):
@@ -161,54 +175,61 @@ class Application:
             return Application.cur_user.pending_tasks.print_list()
         elif list_type == 'completed':
             return Application.cur_user.completed_tasks.print_list()
+        elif list_type == 'failed':
+            return Application.cur_user.failed_tasks.print_list()
 
     @staticmethod
     def get_project_task_list(list_type='pending', project_id=0):
         if project_id:
-            try:
-                Application.load_project(project_id)
-            except Exception as e:
-                raise e
+            Application.load_project(project_id)
         if list_type == 'pending':
             return Application.project.pending_tasks.print_list()
         elif list_type == 'completed':
             return Application.project.completed_tasks.print_list()
+        elif list_type == 'failed':
+            return Application.project.failed_tasks.print_list()
 
     @staticmethod
     def complete_task(task_id):
-        try:
-            Application.cur_user.complete_task(task_id)
-        except KeyError as e:
-            raise e
-        except AttributeError as e:
-            raise e
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
+        Application.cur_user.complete_task(task_id)
 
     @staticmethod
     def move_task(source_id, destination_id):
-        try:
-            Application.cur_user.move_task(source_id, destination_id)
-        except KeyError as e:
-            raise e
-        except RecursionError as e:
-            raise e
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
+        Application.cur_user.move_task(source_id, destination_id)
+
+    @staticmethod
+    def remove_task(task_id):
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
+        Application.cur_user.remove_task(task_id)
+
+    @staticmethod
+    def remove_project_task(task_id, project_id=0):
+        if project_id:
+            Application.load_project(project_id)
+        if not Application.project:
+            raise AttributeError('Project is not loaded')
+        Application.project.remove_task(task_id)
 
     @staticmethod
     def complete_project_task(task_id, project_id=0):
-        try:
-            if project_id:
-                Application.load_project(project_id)
-            Application.project.complete_task(task_id, Application.cur_user.login)
-        except Exception as e:
-            raise e
+        if project_id:
+            Application.load_project(project_id)
+        if not Application.project:
+            raise AttributeError('Project is not loaded')
+        Application.project.complete_task(task_id, Application.cur_user.login)
 
     @staticmethod
     def move_project_task(source_id, destination_id, project_id=0):
-        try:
-            if project_id:
-                Application.load_project(project_id)
-            Application.project.move_task(source_id, destination_id)
-        except Exception as e:
-            raise e
+        if project_id:
+            Application.load_project(project_id)
+        if not Application.project:
+            raise AttributeError('Project is not loaded')
+        Application.project.move_task(source_id, destination_id)
 
     @staticmethod
     def get_projects():
@@ -233,23 +254,28 @@ class Application:
     @staticmethod
     def get_project_users(project_id=0):
         if project_id:
-            try:
-                Application.load_project(project_id)
-            except Exception as e:
-                raise e
+            Application.load_project(project_id)
+        if not Application.project:
+            raise AttributeError('Project is not loaded')
         users = []
+        removed_users = []
         for user_id in Application.project.users:
             if user_id in Application.users:
                 users.append(str(Application.users[user_id]))
+            else:
+                removed_users.append(user_id)
+        for user_id in removed_users:
+            Application.project.users.remove(user_id)
         return users
 
     @staticmethod
     def sort_user_tasks(sort_type):
+        if not Application.cur_user:
+            raise AttributeError('You are not logged in')
         sorts = {
             'name': lambda task: task.name,
             'date': lambda task: task.date,
             'priority': lambda task: task.priority}
-        # make priority field
         if sort_type in sorts:
             Application.cur_user.pending_tasks.sort_by(sorts[sort_type])
         else:
@@ -259,11 +285,13 @@ class Application:
     def sort_project_tasks(sort_type, project_id=0):
         if project_id:
             Application.load_project(project_id)
+        if not Application.project:
+            raise AttributeError('Project is not loaded')
         sorts = {
             'name': lambda task: task.name,
-            'date': lambda task: task.date,
-            'priority': lambda task: task.priority}
-        # make priority field
+            'date': lambda task: task.date if task.date else datetime.datetime(year=2900, month=1, day=5),
+            'priority': lambda task: task.priority
+        }
         if sort_type in sorts:
             Application.project.pending_tasks.sort_by(sorts[sort_type])
         else:
@@ -271,5 +299,10 @@ class Application:
 
     @staticmethod
     def run():
-        Application.load_users()
-        Application.load_project('last_project')
+        try:
+            Application.load_users()
+            Application.load_project('last_project')
+        finally:
+            if Application.cur_user:
+                Application.cur_user.update_tasks()
+
