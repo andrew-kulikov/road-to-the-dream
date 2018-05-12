@@ -2,8 +2,16 @@
 Contains :class:`Task`.
 Uses datetime and hashlib modules.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
+from src.tools import parsers
+from enum import Enum
 import hashlib
+
+
+class TaskStatus(Enum):
+    COMPLETED = 'completed'
+    PENDING = 'in progress'
+    FAILED = 'failed'
 
 
 class Task:
@@ -38,42 +46,23 @@ class Task:
                  tags=None, priority=0, end_date=None, period=None):
         self.date = None
         if end_date:
-            self.parse_date(end_date)
+            self.parse_date = parsers.parse_date(end_date)
         self.period = period
         if period:
             if not end_date:
                 raise Exception('Simple task cannot be repeating')
-            self.parse_period(period)
+            self.parse_period = parsers.parse_period(period)
         self.sub_tasks = []
         self.name = name
         self.description = description
         self.tags = tags
         self.parent_id = parent_id
-        self.status = 'In progress'
+        self.status = TaskStatus.PENDING
         self.id = 0
         self.priority = 0
         if 0 <= priority <= 9:
             self.priority = priority
         self.id = hashlib.sha224(bytes(str(self), 'utf-8')).hexdigest()[:10]
-
-    def parse_date(self, date):
-        """Parse deadline date
-        
-        Note:
-            Sets `self.date` if input string is valid.
-        
-        Args:
-            date (str): Date of deadline in format [DD.MM.YYYY hh:mm].
-        
-        Raises:
-            ValueError: If string does not math format.
-            AttributeError: If date less than current date.
-        
-        """
-        date = datetime.strptime(date, '%d.%m.%Y %H:%M')
-        if date < datetime.now():
-            raise AttributeError('Date cannot be less that current date')
-        self.date = date
 
     def check_fail(self):
         """Check task state
@@ -89,32 +78,11 @@ class Task:
                 while self.date < datetime.now():
                     self.date += self.period
                 return False
-            self.status = 'Failed'
+            self.status = TaskStatus.FAILED
             return True
         if self.period:
             return False
         return False
-
-    def parse_period(self, period):
-        """Parse period from string to :obj:`datetime.timedelta`
-        
-        Args:
-            period (str): Period of repeating in format [d | w | m | y], where
-                            d - day, w - week, m - month, y - year.
-        
-        Raises:
-            AttributeError: If `period` does not match pattern. 
-        """
-        if period == 'd':
-            self.period = timedelta(days=1)
-        elif period == 'w':
-            self.period = timedelta(weeks=1)
-        elif period == 'm':
-            self.period = timedelta(days=30)
-        elif period == 'y':
-            self.period = timedelta(days=365)
-        else:
-            raise AttributeError('Unknown time period')
 
     def change(self, description=None, tags=None,
                name=None, priority=None, deadline=None, period=None):
@@ -138,12 +106,26 @@ class Task:
     def remove_sub_task(self, sub_task_id):
         self.sub_tasks.remove(sub_task_id)
 
-    def __str__(self):
+    def full_info(self):
         s = ''
-        s += 'Task #{id} | {name} | {status} | Deadline: {date} | Pr: {priority}'.format(
+        s += 'Task #{id}\nName: {name}\nStatus: {status}\nDeadline: {date}\nPriority: {priority}\nDescription: {description}\nParent id: {parent_id}\nTags: {tags}'.format(
             id=self.id,
             name=self.name,
-            status=self.status,
+            status=self.status.value,
+            date=self.date,
+            descr=self.description,
+            priority=self.priority,
+            description=self.description,
+            parent_id=self.parent_id,
+            tags=', '.join(self.tags)
+        )
+        return s
+
+    def __str__(self):
+        s = 'Task #{id} | {name} | {status} | Deadline: {date} | Priority: {priority}'.format(
+            id=self.id,
+            name=self.name,
+            status=self.status.value,
             date=self.date,
             descr=self.description,
             priority=self.priority

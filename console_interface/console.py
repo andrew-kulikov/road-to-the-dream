@@ -1,4 +1,4 @@
-from src import Task, TaskList, User, Application
+from src import Task, TaskList, User, application
 import argparse
 import jsonpickle
 
@@ -7,7 +7,7 @@ def login(args):
     login_ = args.login
     password = args.password
     try:
-        Application.authorize(login_, password)
+        application.authorize(login_, password)
         print('Authorized successfully')
     except KeyError as e:
         print(e)
@@ -18,19 +18,19 @@ def register(args):
     password = args.password
     name = args.name
     try:
-        Application.register_user(name, login_, password)
+        application.register_user(name, login_, password)
         print('Registered successfully')
     except KeyError as e:
         print(e)
 
 
 def print_all_users(args=None):
-    for user in Application.users:
-        print(Application.users[user])
+    for user in application.users:
+        print(application.users[user])
 
 
 def print_user(args=None):
-    print(Application.cur_user)
+    print(application.cur_user)
 
 
 def add_task(args):
@@ -42,7 +42,7 @@ def add_task(args):
     deadline = args.deadline
     period = args.period
     try:
-        Application.add_task(name, description, tags, priority, parent_id, deadline, period)
+        application.add_task(name, description, tags, priority, parent_id, deadline, period)
         print('Added successfully')
     except Exception as e:
         print(e)
@@ -57,7 +57,7 @@ def edit_task(args):
     deadline = args.deadline
     period = args.period
     try:
-        Application.edit_task(task_id=task_id, name=name, description=description, tags=tags,
+        application.edit_task(task_id=task_id, name=name, description=description, tags=tags,
                               priority=priority, deadline=deadline, period=period)
         print('Edited successfully')
     except Exception as e:
@@ -67,7 +67,7 @@ def edit_task(args):
 def complete_task(args):
     id = args.id
     try:
-        Application.complete_task(id)
+        application.complete_task(id)
         print('Completed successfully')
     except Exception as e:
         print(e)
@@ -76,7 +76,7 @@ def complete_task(args):
 def remove_task(args):
     task_id = args.id
     try:
-        Application.remove_task(task_id)
+        application.remove_task(task_id)
         print('Removed successfully')
     except Exception as e:
         print(e)
@@ -86,7 +86,7 @@ def move_task(args):
     source = args.source
     dest = args.destination
     try:
-        Application.move_task(source, dest)
+        application.move_task(source, dest)
         print('Moved successfully')
     except Exception as e:
         print(e)
@@ -94,7 +94,7 @@ def move_task(args):
 
 def add_project(args):
     name = args.name
-    Application.add_project(name)
+    application.add_project(name)
 
 
 def add_project_task(args):
@@ -107,7 +107,7 @@ def add_project_task(args):
     deadline = args.deadline
     period = args.period
     try:
-        Application.add_project_task(name, description, tags, parent_id, deadline=deadline,
+        application.add_project_task(name, description, tags, parent_id, deadline=deadline,
                                      priority=priority, project_id=project_id, period=period)
         print('Added successfully')
     except Exception as e:
@@ -124,7 +124,7 @@ def edit_project_task(args):
     deadline = args.deadline
     period = args.period
     try:
-        Application.edit_project_task(task_id, name, description, tags, deadline=deadline,
+        application.edit_project_task(task_id, name, description, tags, deadline=deadline,
                                       priority=priority, project_id=project_id, period=period)
         print('Edited successfully')
     except Exception as e:
@@ -135,7 +135,7 @@ def complete_project_task(args):
     project_id = args.project_id
     task_id = args.task_id
     try:
-        Application.complete_project_task(task_id, project_id)
+        application.complete_project_task(task_id, project_id)
         print('Completed successfully')
     except Exception as e:
         print(e)
@@ -145,7 +145,7 @@ def remove_project_task(args):
     task_id = args.task_id
     project_id = args.project_id
     try:
-        Application.remove_project_task(task_id, project_id)
+        application.remove_project_task(task_id, project_id)
         print('Removed successfully')
     except Exception as e:
         print(e)
@@ -156,7 +156,7 @@ def move_project_task(args):
     source = args.source
     dest = args.destination
     try:
-        Application.move_project_task(source, dest, project_id)
+        application.move_project_task(source, dest, project_id)
         print('Moved successfully')
     except Exception as e:
         print(e)
@@ -169,7 +169,7 @@ def print_tasks(args):
     elif args.failed:
         mode = 'failed'
     try:
-        for task in Application.get_task_list(mode):
+        for task in application.get_task_list(mode):
             print(task)
     except AttributeError as e:
         print(e)
@@ -183,7 +183,7 @@ def print_project_tasks(args):
     elif args.failed:
         mode = 'failed'
     try:
-        for task in Application.get_project_task_list(mode, id):
+        for task in application.get_project_task_list(mode, id):
             print(task)
     except Exception as e:
         print(e)
@@ -191,12 +191,12 @@ def print_project_tasks(args):
 
 def print_project_users(args):
     project_id = args.project_id
-    for user in Application.get_project_users(project_id):
+    for user in application.get_project_users(project_id):
         print(user)
 
 
 def print_projects(args):
-    for project in Application.get_projects():
+    for project in application.get_projects():
         print(project)
         print('-'*20)
 
@@ -204,7 +204,7 @@ def print_projects(args):
 def open_project(args):
     id = args.project_id
     try:
-        Application.load_project(id)
+        application.load_project(id)
         print('Project loaded')
     except Exception as e:
         print(e)
@@ -219,7 +219,7 @@ def sort_tasks(args):
     elif args.priority:
         mode = 'priority'
     try:
-        Application.sort_user_tasks(mode)
+        application.sort_user_tasks(mode)
     except Exception as e:
         print(e)
 
@@ -233,7 +233,7 @@ def sort_project_tasks(args):
     elif args.priority:
         mode = 'priority'
     try:
-        Application.sort_project_tasks(mode)
+        application.sort_project_tasks(mode)
     except Exception as e:
         print(e)
 
@@ -342,7 +342,7 @@ def parse_args():
 
     project_edit_parser = project_subparsers.add_parser('edit', help='Edit task with known id')
     project_edit_parser.add_argument('-pi', '--project_id', help='Project id', default=0)
-    project_edit_parser.add_argument('-i', '--task_id', help='Task id', default=0)
+    project_edit_parser.add_argument('-i', '--id', help='Task id', default=0)
     project_edit_parser.add_argument('-n', '--name', help='New task name', default=None)
     project_edit_parser.add_argument('-d', '--description', help='New task description', default=None)
     project_edit_parser.add_argument('-t', '--tags', help='New task tags', nargs='+', default=None)
@@ -403,12 +403,12 @@ def parse_args():
 
 def main():
     try:
-        Application.run()
+        application.run()
     except FileNotFoundError:
         pass
     parse_args()
-    Application.save_users()
-    Application.save_project()
+    application.save_users()
+    application.save_project()
 
 
 if __name__ == '__main__':

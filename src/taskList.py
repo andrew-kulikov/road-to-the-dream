@@ -1,6 +1,7 @@
+from src import TaskStatus
+
 class TaskList:
-    def __init__(self, tasks=None, name='Simple_list'):
-        self.name = name
+    def __init__(self, tasks=None):
         if tasks:
             if isinstance(tasks, dict):
                 self.tasks = tasks
@@ -21,10 +22,7 @@ class TaskList:
         self.root_tasks.sort(key=lambda x: rule(self.tasks[x]))
         for key in self.tasks:
             task = self.tasks[key]
-            try:
-                task.sub_tasks.sort(key=lambda x: rule(self.tasks[x]))
-            except Exception as e:
-                raise e
+            task.sub_tasks.sort(key=lambda x: rule(self.tasks[x]))
 
     def print_list(self):
         used = {}
@@ -54,7 +52,7 @@ class TaskList:
         if self.tasks[task_id].period:
             self.tasks[task_id].date += self.tasks[task_id].period
             return
-        self.tasks[task_id].status = 'Completed'
+        self.tasks[task_id].status = TaskStatus.COMPLETED
         del self.tasks[task_id]
         if task_id in self.root_tasks:
             self.root_tasks.remove(task_id)

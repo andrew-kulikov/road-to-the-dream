@@ -1,4 +1,4 @@
-from src import TaskList
+from src import TaskList, TaskStatus
 import random
 
 
@@ -64,7 +64,7 @@ class User:
             task_to_fail = self.pending_tasks.get_task(task_id)
             if not task_to_fail or task_to_fail.period:
                 return
-            task_to_fail.status = 'Failed'
+            task_to_fail.status = TaskStatus.FAILED
             self.failed_tasks.add_task(task_to_fail)
             tasks = task_to_fail.sub_tasks
             if not tasks:

@@ -1,291 +1,280 @@
 from src import TaskList, User, Task, Project, ProjectTask
+from src.tools import parsers
 import os
-import json
 import jsonpickle
 import pathlib
 import datetime
 
 
 class Application:
-    users = {}
-    projects = {}
-    project = None
-    cur_user = None
+    def __init__(self, config_path=os.path.join('..', '..', 'config', 'config.ini'), database_folder=None,
+                 users_file=None, cur_user_file=None, projects_folder=None):
+        self.users = {}
+        self.project = None
+        self.cur_user = None
+        try:
+            config = parsers.parse_config(config_path)
+        except Exception:
+            config = None
+        default = None
+        if config:
+            default = config['DEFAULT']
 
-    @staticmethod
-    def authorize(login, password):
-        if login in Application.users:
-            if Application.users[login].check_password(password):
-                Application.cur_user = Application.users[login]
+        if database_folder:
+            self.database_folder = database_folder
+        elif default:
+            self.database_folder = default['database_folder']
+        else:
+            self.database_folder = 'data'
+
+        if projects_folder:
+            self.projects_folder = projects_folder
+        elif default:
+            self.projects_folder = default['projects_folder']
+        else:
+            self.projects_folder = 'projects'
+
+        if users_file:
+            self.users_file = users_file
+        elif default:
+            self.users_file = default['users_file']
+        else:
+            self.users_file = 'users.json'
+
+        if cur_user_file:
+            self.cur_user_file = cur_user_file
+        elif default:
+            self.cur_user_file = default['cur_user_file']
+        else:
+            self.cur_user_file = 'cur_user.txt'
+
+        try:
+            self.load_users()
+            self.load_project('last_project')
+        finally:
+            if self.cur_user:
+                self.cur_user.update_tasks()
+
+    def authorize(self, login, password):
+        if login in self.users:
+            if self.users[login].check_password(password):
+                self.cur_user = self.users[login]
             else:
                 raise KeyError('Wrong password')
         else:
             raise KeyError('User does not exist')
 
-    @staticmethod
-    def register_user(name, login, password):
-        if Application.users.get(login, None):
+    def register_user(self, name, login, password):
+        if self.users.get(login, None):
             raise KeyError('User with this login already exists')
         new_user = User(login, password, name)
-        Application.users[login] = new_user
-        Application.cur_user = new_user
+        self.users[login] = new_user
+        self.cur_user = new_user
 
-    @staticmethod
-    def save_users():
-        if not os.path.exists('data\\'):
-            os.mkdir('data\\')
-        with open(os.path.join('data', 'users.json'), 'w+') as f:
-            f.write(jsonpickle.encode(Application.users))
-        with open(os.path.join('data', 'cur_user.txt'), 'w', encoding='utf-8') as f:
-            if Application.cur_user:
-                f.write(Application.cur_user.login)
+    def save_users(self):
+        if not os.path.exists(self.database_folder):
+            os.mkdir(self.database_folder)
+        with open(os.path.join(self.database_folder, self.users_file), 'w+') as f:
+            f.write(jsonpickle.encode(self.users))
+        with open(os.path.join(self.database_folder, self.cur_user_file), 'w', encoding='utf-8') as f:
+            if self.cur_user:
+                f.write(self.cur_user.login)
 
-    @staticmethod
-    def load_users():
-        if not os.path.exists('data\\'):
-            os.mkdir('data\\')
-            Application.users = None
-        elif os.path.exists(os.path.join('data', 'users.json')):
-            with open(os.path.join('data', 'users.json'), 'r+') as f:
-                Application.users = jsonpickle.decode(f.readline())
-        Application.load_cur_user()
+    def load_users(self):
+        if not os.path.exists(self.database_folder):
+            os.mkdir(self.database_folder)
+            self.users = None
+        elif os.path.exists(os.path.join(self.database_folder, self.users_file)):
+            with open(os.path.join(self.database_folder, self.users_file), 'r') as f:
+                self.users = jsonpickle.decode(f.readline())
+        self.load_cur_user()
 
-    @staticmethod
-    def load_projects():
-        folder = os.path.join('data', 'projects')
-        if not os.path.exists('data'):
-            os.mkdir('data')
-            Application.projects = None
-        elif os.path.exists(folder):
-            files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-            for file_name in files:
-                with open(os.path.join(folder, file_name), 'rb+') as f:
-                    try:
-                        project = jsonpickle.decode(f.readline())
-                        Application.projects[project.id] = project
-                    except Exception:
-                        continue
-
-    @staticmethod
-    def load_project(project_id):
-        folder = os.path.join('data', 'projects')
+    def load_project(self, project_id):
+        folder = os.path.join(self.database_folder, self.projects_folder)
         if not os.path.exists(folder):
             pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
-            Application.project = None
+            self.project = None
             raise FileNotFoundError('No project with current id')
         elif os.path.exists(os.path.join(folder, str(project_id) + '.json')):
-            with open(os.path.join(folder, str(project_id) + '.json'), 'r+') as f:
+            with open(os.path.join(folder, str(project_id) + '.json'), 'r') as f:
                 try:
                     project = jsonpickle.decode(f.readline())
-                    Application.project = project
+                    self.project = project
                 except Exception as e:
-                    Application.project = None
+                    self.project = None
                     raise e
         else:
             raise FileNotFoundError('No project with current id')
 
-    @staticmethod
-    def save_project():
-        folder = os.path.join('data', 'projects')
+    def save_project(self):
+        folder = os.path.join(self.database_folder, self.projects_folder)
         if not os.path.exists(folder):
             pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
-        if Application.project:
-            with open(os.path.join(folder, str(Application.project.id) + '.json'), 'w+') as f1, \
+        if self.project:
+            with open(os.path.join(folder, str(self.project.id) + '.json'), 'w+') as f1, \
                     open(os.path.join(folder, 'last_project.json'), 'w+') as f2:
                 try:
-                    f1.write(jsonpickle.encode(Application.project))
-                    f2.write(jsonpickle.encode(Application.project))
+                    f1.write(jsonpickle.encode(self.project))
+                    f2.write(jsonpickle.encode(self.project))
                 except Exception as e:
-                    Application.project = None
+                    self.project = None
                     raise e
 
-    @staticmethod
-    def save_task_list(task_list):
-        if not os.path.exists('data\\'):
-            os.mkdir('data\\')
-        with open(os.path.join('data', task_list.name + '.txt'), 'w', encoding='utf-8') as f:
-            f.write(json.dumps(task_list))
-
-    @staticmethod
-    def load_cur_user():
-        if not os.path.exists(os.path.join('data', 'cur_user.txt')):
-            open(os.path.join('data', 'cur_user.txt'), 'w').close()
-            Application.cur_user = None
+    def load_cur_user(self):
+        if not os.path.exists(os.path.join(self.database_folder, self.cur_user_file)):
+            open(os.path.join(self.database_folder, self.cur_user_file), 'w').close()
+            self.cur_user = None
         else:
-            with open(os.path.join('data', 'cur_user.txt'), 'r', encoding='utf-8') as f:
+            with open(os.path.join(self.database_folder, self.cur_user_file), 'r', encoding='utf-8') as f:
                 try:
-                    Application.cur_user = Application.users[f.readline().strip()]
-                except KeyError as e:
-                    Application.cur_user = None
+                    self.cur_user = self.users[f.readline().strip()]
+                except KeyError:
+                    self.cur_user = None
 
-    @staticmethod
-    def add_task(name, description, tags, priority=0, parent_id=0, deadline=None, period=None):
-        if not Application.cur_user:
+    def add_task(self, name, description, tags, priority=0, parent_id=0, deadline=None, period=None):
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
         task = Task(name=name, description=description, tags=tags, period=period,
                     parent_id=parent_id, priority=priority, end_date=deadline)
-        Application.cur_user.add_task(task)
+        self.cur_user.add_task(task)
 
-    @staticmethod
-    def edit_task(task_id, name, description, tags,
+    def edit_task(self, task_id, name, description, tags,
                   priority=0, deadline=None, period=None):
-        if not Application.cur_user:
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
-        Application.cur_user.edit_task(task_id=task_id, name=name, description=description, tags=tags,
-                                       priority=priority, deadline=deadline, period=period)
+        self.cur_user.edit_task(task_id=task_id, name=name, description=description, tags=tags,
+                                priority=priority, deadline=deadline, period=period)
 
-    @staticmethod
-    def add_project(project_name):
-        Application.project = Project(project_name)
+    def add_project(self, project_name):
+        self.project = Project(project_name)
 
-    @staticmethod
-    def add_project_task(name, description, tags, parent_id=0, project_id=0, priority=0, deadline=None, period=None):
-        if not project_id and not Application.project:
+    def add_project_task(self, name, description, tags, parent_id=0, project_id=0,
+                         priority=0, deadline=None, period=None):
+        if not project_id and not self.project:
             raise KeyError('Project is not loaded')
-        elif not project_id and Application.project or \
-                project_id and Application.project and Application.project.id == project_id:
+        if project_id:
+            self.load_project(project_id)
+        if self.project:
             task = ProjectTask(name=name, description=description, tags=tags,
-                               parent_id=parent_id, created_user=Application.cur_user.login,
+                               parent_id=parent_id, created_user=self.cur_user.login,
                                priority=priority, end_date=deadline, period=period)
-            Application.project.add_task(task, Application.cur_user.login)
-            Application.cur_user.projects.add(project_id)
-        elif project_id:
-            Application.load_project(project_id)
-            if Application.project:
-                task = ProjectTask(name=name, description=description, tags=tags,
-                                   parent_id=parent_id, created_user=Application.cur_user.login,
-                                   priority=priority, end_date=deadline, period=period)
-                Application.project.add_task(task, Application.cur_user.login)
-                Application.cur_user.projects.add(project_id)
-                # raise exceptions
+            self.project.add_task(task, self.cur_user.login)
+            self.cur_user.projects.add(project_id)
 
-    @staticmethod
-    def edit_project_task(task_id, name, description, tags,
+    def edit_project_task(self, task_id, name, description, tags,
                           project_id=0, priority=0, deadline=None, period=None):
         if project_id:
-            Application.load_project(project_id)
-        Application.project.edit_task(task_id=task_id, name=name, description=description, tags=tags,
-                                      priority=priority, deadline=deadline, period=period)
+            self.load_project(project_id)
+        self.project.edit_task(task_id=task_id, name=name, description=description, tags=tags,
+                               priority=priority, deadline=deadline, period=period)
 
-    @staticmethod
-    def get_task_list(list_type='pending'):
-        if not Application.cur_user:
+    def get_task_list(self, list_type='pending'):
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
         if list_type == 'pending':
-            return Application.cur_user.pending_tasks.print_list()
+            return self.cur_user.pending_tasks.print_list()
         elif list_type == 'completed':
-            return Application.cur_user.completed_tasks.print_list()
+            return self.cur_user.completed_tasks.print_list()
         elif list_type == 'failed':
-            return Application.cur_user.failed_tasks.print_list()
+            return self.cur_user.failed_tasks.print_list()
 
-    @staticmethod
-    def get_project_task_list(list_type='pending', project_id=0):
+    def get_project_task_list(self, list_type='pending', project_id=0):
         if project_id:
-            Application.load_project(project_id)
+            self.load_project(project_id)
         if list_type == 'pending':
-            return Application.project.pending_tasks.print_list()
+            return self.project.pending_tasks.print_list()
         elif list_type == 'completed':
-            return Application.project.completed_tasks.print_list()
+            return self.project.completed_tasks.print_list()
         elif list_type == 'failed':
-            return Application.project.failed_tasks.print_list()
+            return self.project.failed_tasks.print_list()
 
-    @staticmethod
-    def complete_task(task_id):
-        if not Application.cur_user:
+    def complete_task(self, task_id):
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
-        Application.cur_user.complete_task(task_id)
+        self.cur_user.complete_task(task_id)
 
-    @staticmethod
-    def move_task(source_id, destination_id):
-        if not Application.cur_user:
+    def move_task(self, source_id, destination_id):
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
-        Application.cur_user.move_task(source_id, destination_id)
+        self.cur_user.move_task(source_id, destination_id)
 
-    @staticmethod
-    def remove_task(task_id):
-        if not Application.cur_user:
+    def remove_task(self, task_id):
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
-        Application.cur_user.remove_task(task_id)
+        self.cur_user.remove_task(task_id)
 
-    @staticmethod
-    def remove_project_task(task_id, project_id=0):
+    def remove_project_task(self, task_id, project_id=0):
         if project_id:
-            Application.load_project(project_id)
-        if not Application.project:
+            self.load_project(project_id)
+        if not self.project:
             raise AttributeError('Project is not loaded')
-        Application.project.remove_task(task_id)
+        self.project.remove_task(task_id)
 
-    @staticmethod
-    def complete_project_task(task_id, project_id=0):
+    def complete_project_task(self, task_id, project_id=0):
         if project_id:
-            Application.load_project(project_id)
-        if not Application.project:
+            self.load_project(project_id)
+        if not self.project:
             raise AttributeError('Project is not loaded')
-        Application.project.complete_task(task_id, Application.cur_user.login)
+        self.project.complete_task(task_id, self.cur_user.login)
 
-    @staticmethod
-    def move_project_task(source_id, destination_id, project_id=0):
+    def move_project_task(self, source_id, destination_id, project_id=0):
         if project_id:
-            Application.load_project(project_id)
-        if not Application.project:
+            self.load_project(project_id)
+        if not self.project:
             raise AttributeError('Project is not loaded')
-        Application.project.move_task(source_id, destination_id)
+        self.project.move_task(source_id, destination_id)
 
-    @staticmethod
-    def get_projects():
-        folder = os.path.join('data', 'projects')
+    def get_projects(self):
+        folder = os.path.join(self.database_folder, 'projects')
         projects = []
-        if not os.path.exists('data'):
-            os.mkdir('data')
+        if not os.path.exists(self.database_folder):
+            os.mkdir(self.database_folder)
             return ''
         elif os.path.exists(folder):
             files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
             for file_name in files:
                 if file_name == 'last_project.json':
                     continue
-                with open(os.path.join(folder, file_name), 'r+') as f:
+                with open(os.path.join(folder, file_name), 'r') as f:
                     try:
                         project = jsonpickle.decode(f.readline())
                         projects.append(str(project))
-                    except Exception:
+                    except:
                         continue
         return projects
 
-    @staticmethod
-    def get_project_users(project_id=0):
+    def get_project_users(self, project_id=0):
         if project_id:
-            Application.load_project(project_id)
-        if not Application.project:
+            self.load_project(project_id)
+        if not self.project:
             raise AttributeError('Project is not loaded')
         users = []
         removed_users = []
-        for user_id in Application.project.users:
-            if user_id in Application.users:
-                users.append(str(Application.users[user_id]))
+        for user_id in self.project.users:
+            if user_id in self.users:
+                users.append(str(self.users[user_id]))
             else:
                 removed_users.append(user_id)
         for user_id in removed_users:
-            Application.project.users.remove(user_id)
+            self.project.users.remove(user_id)
         return users
 
-    @staticmethod
-    def sort_user_tasks(sort_type):
-        if not Application.cur_user:
+    def sort_user_tasks(self, sort_type):
+        if not self.cur_user:
             raise AttributeError('You are not logged in')
         sorts = {
             'name': lambda task: task.name,
             'date': lambda task: task.date,
             'priority': lambda task: task.priority}
         if sort_type in sorts:
-            Application.cur_user.pending_tasks.sort_by(sorts[sort_type])
+            self.cur_user.pending_tasks.sort_by(sorts[sort_type])
         else:
             raise KeyError('No such sort type')
 
-    @staticmethod
-    def sort_project_tasks(sort_type, project_id=0):
+    def sort_project_tasks(self, sort_type, project_id=0):
         if project_id:
-            Application.load_project(project_id)
-        if not Application.project:
+            self.load_project(project_id)
+        if not self.project:
             raise AttributeError('Project is not loaded')
         sorts = {
             'name': lambda task: task.name,
@@ -293,16 +282,6 @@ class Application:
             'priority': lambda task: task.priority
         }
         if sort_type in sorts:
-            Application.project.pending_tasks.sort_by(sorts[sort_type])
+            self.project.pending_tasks.sort_by(sorts[sort_type])
         else:
             raise KeyError('No such sort type')
-
-    @staticmethod
-    def run():
-        try:
-            Application.load_users()
-            Application.load_project('last_project')
-        finally:
-            if Application.cur_user:
-                Application.cur_user.update_tasks()
-

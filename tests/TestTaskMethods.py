@@ -9,14 +9,6 @@ class TestTaskMethods(unittest.TestCase):
         task = Task()
         self.assertNotEquals(task.id, '')
 
-    def test_numeration(self):
-        size = 10000
-        ids = set()
-        for i in range(size):
-            task = Task(name=str(random.randint(0, 100000)), description=str(random.random()))
-            ids.add(task.id)
-        self.assertEquals(len(ids), size)
-
     def test_sub_task_addition(self):
         parent = Task(description='sdfsdf')
         child = Task(description='erg', tags=['kek', 'lol', 'cheburek'], parent_id=parent.id)
