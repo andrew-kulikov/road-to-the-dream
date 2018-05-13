@@ -39,7 +39,7 @@ class User:
         if not task_to_complete:
             return
         if task_to_complete.period:
-            task_to_complete.date += task_to_complete.period
+            task_to_complete.deadline += task_to_complete.period
             return
         self.completed_tasks.add_task(task_to_complete)
         self.pending_tasks.complete_task(task_id)
@@ -88,6 +88,16 @@ class User:
             self.pending_tasks.add_child(source_id, destination_id)
         except Exception as e:
             raise e
+
+    def get_full_task_info(self, task_id):
+        if task_id in self.pending_tasks.tasks:
+            return self.pending_tasks.tasks[task_id].full_info()
+        elif task_id in self.completed_tasks.tasks:
+            return self.completed_tasks.tasks[task_id].full_info()
+        elif task_id in self.failed_tasks.tasks:
+            return self.failed_tasks.tasks[task_id].full_info()
+        else:
+            raise KeyError('Task with id #{id} does not exist'.format(id=task_id))
 
     def __str__(self):
         return self.login + ' (' + self.name + ')'

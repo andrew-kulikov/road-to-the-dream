@@ -215,7 +215,7 @@ def sort_tasks(args):
     if args.name:
         mode = 'name'
     elif args.date:
-        mode = 'date'
+        mode = 'deadline'
     elif args.priority:
         mode = 'priority'
     try:
@@ -229,7 +229,7 @@ def sort_project_tasks(args):
     if args.name:
         mode = 'name'
     elif args.date:
-        mode = 'date'
+        mode = 'deadline'
     elif args.priority:
         mode = 'priority'
     try:
@@ -282,7 +282,7 @@ def parse_args():
     edit_parser.add_argument('-r', '--priority', type=int,
                              help='New task priority (0-9). 0 - highest priority', default=None)
     edit_parser.add_argument('-e', '--deadline',
-                             help='New date of deadline in format [DD.MM.YYYY HH:MM]', default=None)
+                             help='New deadline of deadline in format [DD.MM.YYYY HH:MM]', default=None)
     edit_parser.add_argument('-pe', '--period', default=None,
                              help='New period of repeating in format d - day; w - week; m - month; y - year')
     edit_parser.set_defaults(func=edit_task)
@@ -310,7 +310,7 @@ def parse_args():
     task_sort_parser = subparsers.add_parser('sort', help='Sort tasks in specific order')
     sort_group = task_sort_parser.add_mutually_exclusive_group()
     sort_group.add_argument('-n', '--name', action='store_true', help='Sort tasks by name')
-    sort_group.add_argument('-d', '--date', action='store_true', help='Sort tasks by date')
+    sort_group.add_argument('-d', '--deadline', action='store_true', help='Sort tasks by deadline')
     sort_group.add_argument('-p', '--priority', action='store_true', help='Sort tasks by priority')
     task_sort_parser.set_defaults(func=sort_tasks)
 
@@ -349,7 +349,7 @@ def parse_args():
     project_edit_parser.add_argument('-r', '--priority', type=int,
                                      help='New task priority (0-9). 0 - highest priority', default=None)
     project_edit_parser.add_argument('-e', '--deadline',
-                                     help='New date of deadline in format [DD.MM.YYYY HH:MM]', default=None)
+                                     help='New deadline of deadline in format [DD.MM.YYYY HH:MM]', default=None)
     project_edit_parser.add_argument('-pe', '--period',
                                      help='New period of repeating in format d - day; w - week; m - month; y - year',
                                      default=None)
@@ -388,7 +388,7 @@ def parse_args():
     project_task_sort_parser = project_subparsers.add_parser('sort', help='Sort project tasks in specific order')
     project_sort_group = project_task_sort_parser.add_mutually_exclusive_group()
     project_sort_group.add_argument('-n', '--name', action='store_true', help='Sort tasks by name')
-    project_sort_group.add_argument('-d', '--date', action='store_true', help='Sort tasks by date')
+    project_sort_group.add_argument('-d', '--deadline', action='store_true', help='Sort tasks by deadline')
     project_sort_group.add_argument('-p', '--priority', action='store_true', help='Sort tasks by priority')
     project_task_sort_parser.set_defaults(func=sort_project_tasks)
 

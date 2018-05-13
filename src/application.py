@@ -187,6 +187,16 @@ class Application:
                                 priority=priority, deadline=deadline, period=period)
         self.logger.info('Edited task #{id}'.format(id=task_id))
 
+    def get_full_task_info(self, task_id):
+        try:
+            s = self.cur_user.get_full_task_info(task_id)
+            self.logger.info('Got full info of task #{id}'.format(id=task_id))
+        except KeyError as e:
+            self.logger.error('Task with id #{id} does not exist'.format(id=task_id))
+            s = ''
+            raise e
+        return s
+
     def add_project(self, project_name):
         self.project = Project(project_name)
         self.logger.info('Added project #{id}'.format(id=self.project.id))
@@ -216,12 +226,16 @@ class Application:
         if not self.cur_user:
             self.logger.error('Cannot get task list: there is no authorized user.')
             raise AttributeError('You are not logged in')
+        s = None
         if list_type == 'pending':
-            return self.cur_user.pending_tasks.print_list()
+            s = self.cur_user.pending_tasks.print_list()
         elif list_type == 'completed':
-            return self.cur_user.completed_tasks.print_list()
+            s = self.cur_user.completed_tasks.print_list()
         elif list_type == 'failed':
-            return self.cur_user.failed_tasks.print_list()
+            s = self.cur_user.failed_tasks.print_list()
+        if s:
+            self.logger.info('Got {type} task list'.format(type=list_type))
+        return s
 
     def get_project_task_list(self, list_type='pending', project_id=0):
         if project_id:
@@ -323,7 +337,7 @@ class Application:
             raise AttributeError('You are not logged in')
         sorts = {
             'name': lambda task: task.name,
-            'date': lambda task: task.date,
+            'deadline': lambda task: task.date,
             'priority': lambda task: task.priority}
         if sort_type in sorts:
             self.cur_user.pending_tasks.sort_by(sorts[sort_type])
@@ -339,7 +353,7 @@ class Application:
             raise AttributeError('Project is not loaded')
         sorts = {
             'name': lambda task: task.name,
-            'date': lambda task: task.date if task.date else datetime.datetime(year=2900, month=1, day=5),
+            'deadline': lambda task: task.date if task.date else datetime.datetime(year=2900, month=1, day=5),
             'priority': lambda task: task.priority
         }
         if sort_type in sorts:

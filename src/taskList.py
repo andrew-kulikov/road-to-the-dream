@@ -50,7 +50,7 @@ class TaskList:
 
     def complete_task(self, task_id):
         if self.tasks[task_id].period:
-            self.tasks[task_id].date += self.tasks[task_id].period
+            self.tasks[task_id].deadline += self.tasks[task_id].period
             return
         self.tasks[task_id].status = TaskStatus.COMPLETED
         del self.tasks[task_id]

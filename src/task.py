@@ -44,18 +44,22 @@ class Task:
     """
     def __init__(self, parent_id=0, name='Simple task', description='',
                  tags=None, priority=0, end_date=None, period=None):
-        self.date = None
+        self.deadline = None
+        self.start_date = datetime.now()
+        self.changes = []
         if end_date:
-            self.parse_date = parsers.parse_date(end_date)
+            self.deadline = parsers.parse_date(end_date)
         self.period = period
         if period:
             if not end_date:
                 raise Exception('Simple task cannot be repeating')
-            self.parse_period = parsers.parse_period(period)
+            self.period = parsers.parse_period(period)
         self.sub_tasks = []
         self.name = name
         self.description = description
-        self.tags = tags
+        self.tags = []
+        if tags and isinstance(tags, list):
+            self.tags = tags
         self.parent_id = parent_id
         self.status = TaskStatus.PENDING
         self.id = 0
@@ -71,12 +75,12 @@ class Task:
             bool: True if task is overdue, False otherwise.
         
         """
-        if not self.date:
+        if not self.deadline:
             return False
-        if self.date < datetime.now():
+        if self.deadline < datetime.now():
             if self.period:
-                while self.date < datetime.now():
-                    self.date += self.period
+                while self.deadline < datetime.now():
+                    self.deadline += self.period
                 return False
             self.status = TaskStatus.FAILED
             return True
@@ -86,6 +90,10 @@ class Task:
 
     def change(self, description=None, tags=None,
                name=None, priority=None, deadline=None, period=None):
+        if deadline:
+            self.deadline = parsers.parse_date(deadline)
+        if period:
+            self.period = parsers.parse_period(period)
         if description:
             self.description = description
         if tags:
@@ -94,10 +102,7 @@ class Task:
             self.name = name
         if priority and 0 <= priority <= 9:
             self.priority = priority
-        if deadline:
-            self.parse_date(deadline)
-        if period:
-            self.parse_period(period)
+        self.changes.append(datetime.now())
 
     def add_sub_task(self, sub_task_id):
         if sub_task_id not in self.sub_tasks:
@@ -107,17 +112,31 @@ class Task:
         self.sub_tasks.remove(sub_task_id)
 
     def full_info(self):
-        s = ''
-        s += 'Task #{id}\nName: {name}\nStatus: {status}\nDeadline: {date}\nPriority: {priority}\nDescription: {description}\nParent id: {parent_id}\nTags: {tags}'.format(
+        s = """Task #{id}
+Name: {name}
+Status: {status}
+Created: {start}
+Deadline: {date}
+Priority: {priority}
+Description: {description}
+Parent id: {parent_id}
+Tags: {tags}
+Period: {period}
+Changed: {changed}
+Subtasks: {sub}""".format(
             id=self.id,
             name=self.name,
             status=self.status.value,
-            date=self.date,
+            date=self.deadline,
             descr=self.description,
             priority=self.priority,
             description=self.description,
             parent_id=self.parent_id,
-            tags=', '.join(self.tags)
+            tags=', '.join(self.tags),
+            period=self.period,
+            start=self.start_date,
+            changed=', '.join(self.changes),
+            sub=', '.join(self.sub_tasks)
         )
         return s
 
@@ -126,7 +145,7 @@ class Task:
             id=self.id,
             name=self.name,
             status=self.status.value,
-            date=self.date,
+            date=self.deadline,
             descr=self.description,
             priority=self.priority
         )

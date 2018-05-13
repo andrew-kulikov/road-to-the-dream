@@ -35,7 +35,7 @@ class Project:
         if not task_to_complete:
             return
         if task_to_complete.period:
-            task_to_complete.date += task_to_complete.period
+            task_to_complete.deadline += task_to_complete.period
             return
         task_to_complete.completed_user = completed_user
         self.completed_tasks.add_task(task_to_complete)

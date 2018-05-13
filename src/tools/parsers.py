@@ -1,5 +1,6 @@
 import configparser
 import os
+from dateutil import relativedelta
 from datetime import timedelta, datetime
 
 
@@ -20,43 +21,44 @@ def parse_period(period):
         AttributeError: If `period` does not match pattern. 
     """
     if period == 'd':
-        period = timedelta(days=1)
+        period = relativedelta.relativedelta(days=+1)
     elif period == 'w':
-        period = timedelta(weeks=1)
+        period = relativedelta.relativedelta(weeks=+1)
     elif period == 'm':
-        period = timedelta(days=30)
+        period = relativedelta.relativedelta(months=+1)
     elif period == 'y':
-        period = timedelta(days=365)
+        period = relativedelta.relativedelta(years=+1)
     else:
         raise AttributeError('Unknown time period')
     return period
 
 
 def parse_date(date, pattern='%d.%m.%Y %H:%M'):
-    """Parse deadline date
+    """Parse deadline deadline
 
     Note:
-        Returns `date` if input string is valid.
+        Returns `deadline` if input string is valid.
 
     Args:
         date (str): Date of deadline in format [DD.MM.YYYY hh:mm].
-        pattern (str): Format of date string representation.
+        pattern (str): Format of deadline string representation.
 
     Raises:
         ValueError: If string does not math format.
-        AttributeError: If date less than current date.
+        AttributeError: If deadline less than current deadline.
 
     """
     date = datetime.strptime(date, pattern)
     if date < datetime.now():
-        raise AttributeError('Date cannot be less that current date')
+        raise AttributeError('Date cannot be less that current deadline')
     return date
 
 
 def main():
-    d = parse_config()['DEFAULT']
-    for key in d:
-        print(key, d[key])
+    n = input()
+    a = set(map(str, input().split()))
+    print(len(a))
+    print(' '.join(a))
 
 if __name__ == '__main__':
     main()
