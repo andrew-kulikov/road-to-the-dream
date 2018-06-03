@@ -61,6 +61,8 @@ class Application:
         try:
             self.load_users()
             self.load_project('last_project')
+        except FileNotFoundError:
+            pass
         finally:
             if self.cur_user:
                 self.cur_user.update_tasks()
@@ -193,7 +195,17 @@ class Application:
             self.logger.info('Got full info of task #{id}'.format(id=task_id))
         except KeyError as e:
             self.logger.error('Task with id #{id} does not exist'.format(id=task_id))
-            s = ''
+            raise e
+        return s
+
+    def get_full_project_task_info(self, task_id, project_id):
+        try:
+            if project_id:
+                self.load_project(project_id)
+            s = self.project.get_full_task_info(task_id)
+            self.logger.info('Got full info of task #{id}'.format(id=task_id))
+        except KeyError as e:
+            self.logger.error('Task with id #{id} does not exist'.format(id=task_id))
             raise e
         return s
 
@@ -240,6 +252,9 @@ class Application:
     def get_project_task_list(self, list_type='pending', project_id=0):
         if project_id:
             self.load_project(project_id)
+        if not self.project:
+            self.logger.error('Cannot get task list: there is no loaded project.')
+            raise AttributeError('Cannot get task list: there is no loaded project.')
         if list_type == 'pending':
             return self.project.pending_tasks.print_list()
         elif list_type == 'completed':

@@ -1,4 +1,4 @@
-from src import Task, TaskList, User, application
+from src import Task, TaskList, User, Application
 import argparse
 import jsonpickle
 
@@ -94,7 +94,11 @@ def move_task(args):
 
 def add_project(args):
     name = args.name
-    application.add_project(name)
+    try:
+        application.add_project(name)
+        print('Project created successfully')
+    except Exception as e:
+        print(e)
 
 
 def add_project_task(args):
@@ -173,6 +177,17 @@ def print_tasks(args):
             print(task)
     except AttributeError as e:
         print(e)
+
+
+def inspect_task(args):
+    task_id = args.id
+    print(application.get_full_task_info(task_id))
+
+
+def inspect_project_task(args):
+    task_id = args.id
+    project_id = args.project_id
+    print(application.get_full_project_task_info(task_id, project_id))
 
 
 def print_project_tasks(args):
@@ -288,11 +303,11 @@ def parse_args():
     edit_parser.set_defaults(func=edit_task)
 
     complete_parser = subparsers.add_parser('complete', help='Complete task #ID')
-    complete_parser.add_argument('-i', '--id', help='Id of completed task', required=True)
+    complete_parser.add_argument('id', help='Id of completed task')
     complete_parser.set_defaults(func=complete_task)
 
     remove_parser = subparsers.add_parser('remove', help='Remove task #ID')
-    remove_parser.add_argument('-i', '--id', help='Id of task to remove', required=True)
+    remove_parser.add_argument('id', help='Id of task to remove')
     remove_parser.set_defaults(func=remove_task)
 
     move_parser = subparsers.add_parser('move', help='Move task #source to sub tasks of task #destination')
@@ -314,12 +329,16 @@ def parse_args():
     sort_group.add_argument('-p', '--priority', action='store_true', help='Sort tasks by priority')
     task_sort_parser.set_defaults(func=sort_tasks)
 
+    more_parser = subparsers.add_parser('more', help='Show full information of task #ID')
+    more_parser.add_argument('id', help='Id of task to inspect')
+    more_parser.set_defaults(func=inspect_task)
+
     projects_parser = subparsers.add_parser('project', help='Manage projects')
 
     project_subparsers = projects_parser.add_subparsers(help='sub-command help')
 
     project_add_parser = project_subparsers.add_parser('open', help='Open new project')
-    project_add_parser.add_argument('id', help='Project id')
+    project_add_parser.add_argument('project_id', help='Project id')
     project_add_parser.set_defaults(func=open_project)
 
     project_open_parser = project_subparsers.add_parser('create', help='Create new project')
@@ -393,8 +412,13 @@ def parse_args():
     project_task_sort_parser.set_defaults(func=sort_project_tasks)
 
     project_users_parser = project_subparsers.add_parser('users', help='Print all users in project')
-    project_users_parser.add_argument('-i', '--id', help='Project id', default=0)
+    project_users_parser.add_argument('-pi', '--project_id', help='Project id', default=0)
     project_users_parser.set_defaults(func=print_project_users)
+
+    project_more_parser = project_subparsers.add_parser('more', help='Show full information of task #ID')
+    project_more_parser.add_argument('id', help='Id of task to inspect')
+    project_more_parser.add_argument('-pi', '--project_id', help='Project id', default=0)
+    project_more_parser.set_defaults(func=inspect_project_task)
 
     args = parser.parse_args()
     if 'func' in args:
@@ -402,14 +426,11 @@ def parse_args():
 
 
 def main():
-    try:
-        application.run()
-    except FileNotFoundError:
-        pass
     parse_args()
     application.save_users()
     application.save_project()
 
 
 if __name__ == '__main__':
+    application = Application()
     main()

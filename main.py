@@ -94,7 +94,11 @@ def move_task(args):
 
 def add_project(args):
     name = args.name
-    application.add_project(name)
+    try:
+        application.add_project(name)
+        print('Project created successfully')
+    except Exception as e:
+        print(e)
 
 
 def add_project_task(args):
@@ -178,6 +182,12 @@ def print_tasks(args):
 def inspect_task(args):
     task_id = args.id
     print(application.get_full_task_info(task_id))
+
+
+def inspect_project_task(args):
+    task_id = args.id
+    project_id = args.project_id
+    print(application.get_full_project_task_info(task_id, project_id))
 
 
 def print_project_tasks(args):
@@ -404,6 +414,11 @@ def parse_args():
     project_users_parser = project_subparsers.add_parser('users', help='Print all users in project')
     project_users_parser.add_argument('-pi', '--project_id', help='Project id', default=0)
     project_users_parser.set_defaults(func=print_project_users)
+
+    project_more_parser = project_subparsers.add_parser('more', help='Show full information of task #ID')
+    project_more_parser.add_argument('id', help='Id of task to inspect')
+    project_more_parser.add_argument('-pi', '--project_id', help='Project id', default=0)
+    project_more_parser.set_defaults(func=inspect_project_task)
 
     args = parser.parse_args()
     if 'func' in args:

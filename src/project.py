@@ -85,6 +85,16 @@ class Project:
         except Exception as e:
             raise e
 
+    def get_full_task_info(self, task_id):
+        if task_id in self.pending_tasks.tasks:
+            return self.pending_tasks.tasks[task_id].full_info()
+        elif task_id in self.completed_tasks.tasks:
+            return self.completed_tasks.tasks[task_id].full_info()
+        elif task_id in self.failed_tasks.tasks:
+            return self.failed_tasks.tasks[task_id].full_info()
+        else:
+            raise KeyError('Task with id #{id} does not exist'.format(id=task_id))
+
     def __str__(self):
         s = ''
         s += 'Id: {id}\nName: {name}\nPending tasks amount: {pending}\nCompleted tasks amount: {completed}\n'.format(

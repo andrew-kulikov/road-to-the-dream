@@ -1,6 +1,6 @@
-"""Task module. 
-Contains :class:`Task`.
-Uses datetime and hashlib modules.
+"""task module. 
+Contains :class:`Task`, :class:`TaskStatus`.
+Uses datetime, hashlib and enum modules.
 """
 from datetime import datetime
 from src.tools import parsers
@@ -90,6 +90,22 @@ class Task:
 
     def change(self, description=None, tags=None,
                name=None, priority=None, deadline=None, period=None):
+        """Change task parameters by given 
+        
+        Args:
+            name (str, default 'Simple task'): Task name, should be informative and short.
+            description (str, default ''): Additional information for the task.
+            tags (:obj:`list`, default None): Task tags.
+            priority(:obj:`int`, default 0): Task priority - integer number in range (0, 10),
+                                             0 - highest priority, 9 - lowest.
+            deadline(str, default None): Date of deadline in format [DD.MM.YYYY hh:mm]. 
+                                        If None, task has no time limit. 
+            period(str, default None): Period of repeating in format [d | w | m | y], where
+                                        d - day, w - week, m - month, y - year. If None, task is not repeating.
+        
+        Returns: 
+            None
+        """
         if deadline:
             self.deadline = parsers.parse_date(deadline)
         if period:
@@ -105,6 +121,14 @@ class Task:
         self.changes.append(datetime.now())
 
     def add_sub_task(self, sub_task_id):
+        """Add subtask id task's subtasks
+        
+        Args:
+            sub_task_id (str): id of added subtask.
+        
+        Returns:
+            None
+        """
         if sub_task_id not in self.sub_tasks:
             self.sub_tasks.append(sub_task_id)
 
@@ -112,6 +136,12 @@ class Task:
         self.sub_tasks.remove(sub_task_id)
 
     def full_info(self):
+        """Get string with all information about task
+        
+        Returns:
+            str: Contains id, name, creation date, deadline, priority, description, parent id, tags, 
+                 period, changes dates, subtasks ids.
+        """
         s = """Task #{id}
 Name: {name}
 Status: {status}
@@ -141,6 +171,11 @@ Subtasks: {sub}""".format(
         return s
 
     def __str__(self):
+        """Short string representation of task
+        
+        Returns:
+             str: Contains id, name, status, deadline, priority. 
+        """
         s = 'Task #{id} | {name} | {status} | Deadline: {date} | Priority: {priority}'.format(
             id=self.id,
             name=self.name,
