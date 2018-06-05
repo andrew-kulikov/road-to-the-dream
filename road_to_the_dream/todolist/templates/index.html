@@ -1,0 +1,7 @@
+{% include 'partials/header.html' %}
+<ul>
+    {% for task in tasks %}
+    <li><a href="/todolist/details/{{task.id}}">{{task.title}}</a> : {{task.description}}</li>
+    {% endfor %}
+</ul>
+{% include 'partials/footer.html' %}
