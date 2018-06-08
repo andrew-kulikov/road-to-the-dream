@@ -1,0 +1,9 @@
+venv/
+tasochki.egg-info/
+road_to_the_dream/db.sqlite3
+road_to_the_dream/venv/
+.idea/
+build/
+data/
+log.log
+*__pycache__*

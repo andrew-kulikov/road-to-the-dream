@@ -15,10 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from .core import views as core_views
 
 urlpatterns = [
-    url(r'^signup/$', core_views.signup, name='signup'),
+    url(r'^accounts/', include('accounts.urls')),
+    url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^todolist/', include('todolist.urls')),
     url(r'^admin/', admin.site.urls),
 ]
