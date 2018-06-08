@@ -1,4 +1,10 @@
-{% include 'partials/header.html' %}
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Add task </title>
+{% endblock%}
+
+{% block title %}
 <form action="{% url 'add' %}" method="post">
     {% csrf_token %}
     <label for="title">Title</label>
@@ -12,4 +18,4 @@
     <input type="submit" value="submit">
 </form>
 <a href="/">Go back</a>
-{% include 'partials/footer.html' %}
+{% endblock%}
