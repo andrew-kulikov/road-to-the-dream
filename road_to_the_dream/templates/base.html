@@ -21,7 +21,18 @@
             <!-- Sidebar Holder -->
             <nav id="sidebar">
                 <div class="sidebar-header">
-                    <h3>Here will be user</h3>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                            Hello, {{ user }}
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Settings</a></li>
+                            <li><a href="#">Stats</a></li>
+                            <li><a href="#">Help</a></li>
+                            <li><a href="#">Sign out</a></li>
+                        </ul>
+                    </div>
                 </div>
 
                 <ul class="list-unstyled components">
@@ -36,15 +47,15 @@
                         <a href="#">Next week</a>
                     </li>
                     <li>
-                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Lists</a>
-                        <ul class="collapse list-unstyled" id="homeSubmenu">
+                        <a href="#listsSubmenu" data-toggle="collapse" aria-expanded="false">Lists</a>
+                        <ul class="collapse list-unstyled" id="listsSubmenu">
                             {% for list in task_lists %}
-                            <li><a href="lists/{{list.id}}">{{ list.name }}</a></li>
+                            <li><a href="todolist/lists/{{list.id}}">{{ list.name }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
                     <li>
-                        <a href="#" data-toggle="collapse" aria-expanded="false">Tags</a>
+                        <a href="#tagsSubmenu" data-toggle="collapse" aria-expanded="false">Tags</a>
                         <ul class="collapse list-unstyled" id="tagsSubmenu">
                             {% for tag in tags %}
                             <li><a href="tags/{{tag.id}}">{{ tag.name }}</a></li>
@@ -59,10 +70,10 @@
                     </li>
                 </ul>
 
-                <ul class="list-unstyled CTAs">
+                <!--ul class="list-unstyled CTAs">
                     <li><a href="https://bootstrapious.com/tutorial/files/sidebar.zip" class="download">Download source</a></li>
                     <li><a href="https://bootstrapious.com/p/bootstrap-sidebar" class="article">Back to article</a></li>
-                </ul>
+                </ul-->
             </nav>
 
             <!-- Page Content Holder -->
