@@ -10,20 +10,10 @@
 {% endblock %}
 
 {% block content %}
-  <h2>Login</h2>
-  <form role="form" id="login_form" class="form-horizontal" method="post">
-    {% csrf_token %}
-    <div class="form-group">
-        {% for field in form %}
-            <div class="form-group">
-                <label>{{ field.html_name }}</label>
-                <input type="email" class="form-control" aria-describedby="emailHelp" placeholder="Enter email" />
-                <small class="form-text text-muted">We'll never share your email with anyone else.</small>
-                {{ field.errors }}
-            </div>
-        {% endfor %}
+    <h2 id="login_header">Login</h2>
+    <form role="form" id="login_form" class="form-horizontal" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
         <input type="submit" class="btn btn-primary" value="login" />
-    </div>
-
-</form>
+    </form>
 {% endblock %}

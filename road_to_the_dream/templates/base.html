@@ -16,9 +16,6 @@
         {% endblock %}
     </head>
     <body>
-
-
-
         <div class="wrapper">
             <!-- Sidebar Holder -->
             <nav id="sidebar">
@@ -29,27 +26,35 @@
                 <ul class="list-unstyled components">
                     <!--p>Dummy Heading</p-->
                     <li class="active">
-                        <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">All</a>
-                        <ul class="collapse list-unstyled" id="homeSubmenu">
-                            <li><a href="#">Home 1</a></li>
-                            <li><a href="#">Home 2</a></li>
-                            <li><a href="#">Home 3</a></li>
-                        </ul>
+                        <a href="#">All</a>
                     </li>
                     <li>
                         <a href="#">Today</a>
-                        <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false">Next week</a>
-                        <ul class="collapse list-unstyled" id="pageSubmenu">
-                            <li><a href="#">Page 1</a></li>
-                            <li><a href="#">Page 2</a></li>
-                            <li><a href="#">Page 3</a></li>
+                    </li>
+                    <li>
+                        <a href="#">Next week</a>
+                    </li>
+                    <li>
+                        <a href="#" data-toggle="collapse" aria-expanded="false">Lists</a>
+                        <ul class="collapse list-unstyled" id="listSubmenu">
+                            {% for list in lists %}
+                            <li><a href="lists/{{list.id}}">{{ list.name }}</a></li>
+                            {% endfor %}
                         </ul>
                     </li>
                     <li>
-                        <a href="#">Portfolio</a>
+                        <a href="#" data-toggle="collapse" aria-expanded="false">Tags</a>
+                        <ul class="collapse list-unstyled" id="tagsSubmenu">
+                            {% for tag in tags %}
+                            <li><a href="tags/{{tag.id}}">{{ tag.name }}</a></li>
+                            {% endfor %}
+                        </ul>
                     </li>
                     <li>
-                        <a href="#">Contact</a>
+                        <a href="#">Completed</a>
+                    </li>
+                    <li>
+                        <a href="#">Trash</a>
                     </li>
                 </ul>
 
