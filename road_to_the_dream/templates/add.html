@@ -4,7 +4,7 @@
 <title> RD - Add task </title>
 {% endblock%}
 
-{% block title %}
+{% block content %}
 <form action="{% url 'add' %}" method="post">
     {% csrf_token %}
     <label for="title">Title</label>

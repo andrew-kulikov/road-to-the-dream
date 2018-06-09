@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib import admin
 
-from .models import Task
+from .models import Task, TaskList, Tag
 
 
 def index(request):
     tasks = Task.objects.all()[:10]
+    task_lists = TaskList.objects.all()
+    tags = Tag.objects.all()
     context = {
         'name': 'Andrew',
-        'tasks': tasks
+        'tasks': tasks,
+        'task_lists': task_lists,
+        'tags': tags
     }
     return render(request, 'index.html', context)
 
@@ -26,8 +31,8 @@ def add(request):
     if request.method == 'POST':
         title = request.POST['title']
         description = request.POST['description']
-
-        task = Task(title=title, description=description)
+        user = request.user
+        task = Task(title=title, description=description, user=user)
         task.save()
 
         return redirect('/todolist')
