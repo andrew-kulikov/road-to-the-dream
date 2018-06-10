@@ -27,6 +27,16 @@ def details(request, task_id):
     return render(request, 'details.html', context)
 
 
+def list_details(request, list_id):
+    list = TaskList.objects.get(id=list_id)
+    tasks = list.task_set.all()
+    context = {
+        'name': 'Andrew',
+        'tasks': tasks
+    }
+    return render(request, 'list_details.html', context)
+
+
 def add(request):
     if request.method == 'POST':
         title = request.POST['title']

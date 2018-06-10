@@ -6,4 +6,5 @@ def add_variable_to_context(request):
         'task_lists': TaskList.objects.all(),
         'tags': Tag.objects.all(),
         'user': request.user,
+        'request_path': request.path,
     }

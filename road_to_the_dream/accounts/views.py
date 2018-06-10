@@ -2,6 +2,8 @@ from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from .user_create_form import UserCreateForm
 from .login_form import LoginForm
+from django.contrib.auth.views import logout
+from django.http import HttpResponse
 
 
 def signup(request):
@@ -26,3 +28,8 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
+
+
+def log_out(request):
+    logout(request)
+    return redirect(request.GET.get('next'))

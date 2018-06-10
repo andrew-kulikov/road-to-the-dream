@@ -30,7 +30,8 @@
                             <li><a href="#">Settings</a></li>
                             <li><a href="#">Stats</a></li>
                             <li><a href="#">Help</a></li>
-                            <li><a href="#">Sign out</a></li>
+                            <li><a href="/accounts/logout/?next={{request_path}}">Sign out</a></li>
+                            <li>{{request_path}}</li>
                         </ul>
                     </div>
                 </div>
@@ -50,7 +51,7 @@
                         <a href="#listsSubmenu" data-toggle="collapse" aria-expanded="false">Lists</a>
                         <ul class="collapse list-unstyled" id="listsSubmenu">
                             {% for list in task_lists %}
-                            <li><a href="todolist/lists/{{list.id}}">{{ list.name }}</a></li>
+                            <li><a href="/todolist/lists/{{list.id}}">{{ list.name }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
@@ -58,7 +59,7 @@
                         <a href="#tagsSubmenu" data-toggle="collapse" aria-expanded="false">Tags</a>
                         <ul class="collapse list-unstyled" id="tagsSubmenu">
                             {% for tag in tags %}
-                            <li><a href="tags/{{tag.id}}">{{ tag.name }}</a></li>
+                            <li><a href="/todolist/tags/{{tag.id}}">{{ tag.name }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
