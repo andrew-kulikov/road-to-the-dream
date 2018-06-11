@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib import admin
 
 from .models import Task, TaskList, Tag
 
 
 def index(request):
-    tasks = Task.objects.all()[:10]
+    #if request.user.is_anonymous:
+    #    return redirect('/accounts/login')
+    tasks = Task.objects.filter(user=request.user)
     task_lists = TaskList.objects.all()
     tags = Tag.objects.all()
     context = {
