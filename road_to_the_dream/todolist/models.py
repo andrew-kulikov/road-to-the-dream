@@ -12,6 +12,8 @@ class Tag(models.Model):
 
 class TaskList(models.Model):
     name = models.CharField(max_length=50)
+    is_private = models.BooleanField(default=True)
+    users = models.ManyToManyField(User, default=None, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -24,6 +26,11 @@ class Task(models.Model):
         ('L', 'Low'),
         ('N', 'None')
     )
+    STATUS = (
+        ('P', 'Pending'),
+        ('C', 'Completed'),
+        ('T', 'Trash'),
+    )
 
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -33,6 +40,7 @@ class Task(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, null=True)
     task_list = models.ForeignKey(TaskList, on_delete=models.CASCADE, default=None, null=True, blank=True)
     priority = models.CharField(max_length=1, choices=PRIORITIES, default='N')
+    status = models.CharField(max_length=1, choices=STATUS, default='P')
 
     class Meta:
         ordering = ('deadline',)

@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
-
+from django.contrib.auth.decorators import login_required
 from .models import Task, TaskList, Tag
 
 
+@login_required(login_url='/accounts/login')
 def index(request):
-    #if request.user.is_anonymous:
-    #    return redirect('/accounts/login')
     tasks = Task.objects.filter(user=request.user)
-    task_lists = TaskList.objects.all()
+    task_lists = TaskList.objects.filter(users__in=[request.user])
     tags = Tag.objects.all()
     context = {
         'name': 'Andrew',
@@ -18,15 +17,16 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+@login_required(login_url='/accounts/login')
 def details(request, task_id):
     task = Task.objects.get(id=task_id)
     context = {
-        'name': 'Andrew',
         'task': task
     }
     return render(request, 'details.html', context)
 
 
+@login_required(login_url='/accounts/login')
 def list_details(request, list_id):
     list = TaskList.objects.get(id=list_id)
     tasks = list.task_set.all()
@@ -37,6 +37,18 @@ def list_details(request, list_id):
     return render(request, 'list_details.html', context)
 
 
+@login_required(login_url='/accounts/login')
+def tag_details(request, tag_id):
+    tag = Tag.objects.get(id=tag_id)
+    tasks = tag.task_set.all()
+    context = {
+        'name': 'Andrew',
+        'tasks': tasks
+    }
+    return render(request, 'tag_details.html', context)
+
+
+@login_required(login_url='/accounts/login')
 def add(request):
     if request.method == 'POST':
         title = request.POST['title']
@@ -47,3 +59,20 @@ def add(request):
 
         return redirect('/todolist')
     return render(request, 'add.html')
+
+
+@login_required(login_url='/accounts/login')
+def add_list(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        is_private = False
+        if 'is_private' in request.POST:
+            is_private = True
+        user = request.user
+        tasklist = TaskList(name=name, is_private=is_private)
+        tasklist.save()
+        tasklist.users.add(user)
+        tasklist.save()
+
+        return redirect('/todolist')
+    return render(request, 'add_tasklist.html')
