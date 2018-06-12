@@ -9,7 +9,6 @@ def index(request):
     task_lists = TaskList.objects.filter(users__in=[request.user])
     tags = Tag.objects.all()
     context = {
-        'name': 'Andrew',
         'tasks': tasks,
         'task_lists': task_lists,
         'tags': tags
@@ -30,9 +29,10 @@ def details(request, task_id):
 def list_details(request, list_id):
     list = TaskList.objects.get(id=list_id)
     tasks = list.task_set.all()
+    users = list.users.all()
     context = {
-        'name': 'Andrew',
-        'tasks': tasks
+        'tasks': tasks,
+        'users': users
     }
     return render(request, 'list_details.html', context)
 
@@ -42,7 +42,6 @@ def tag_details(request, tag_id):
     tag = Tag.objects.get(id=tag_id)
     tasks = tag.task_set.all()
     context = {
-        'name': 'Andrew',
         'tasks': tasks
     }
     return render(request, 'tag_details.html', context)

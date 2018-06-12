@@ -10,5 +10,14 @@
 <p>Ee sdelali: {{task.created}}</p>
 <p>Deadline: {{task.deadline}}</p>
 <p>Created user: {{task.user}}</p>
-<p></p>
+<p>Task list: {{task.task_list}}</p>
+<p>Status: {{task.status}}</p>
+<h5>Tags</h5>
+<ul>
+    {% for tag in task.tags.all %}
+    <li>
+        {{tag}}
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}
