@@ -53,6 +53,12 @@
                             {% for list in task_lists %}
                             <li><a href="/todolist/lists/{{list.id}}">{{ list.name }}</a></li>
                             {% endfor %}
+                            <li>
+                                <a href="/todolist/lists/add/?next={{request_path}}">
+                                    <i class="glyphicon glyphicon-plus  "></i>
+                                    Add
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     <li>
