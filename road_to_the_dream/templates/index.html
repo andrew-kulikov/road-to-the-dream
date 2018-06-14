@@ -7,7 +7,18 @@
 {% block content %}
 <ul>
     {% for task in tasks %}
-    <li><a href="/todolist/details/{{task.id}}">{{task.title}}</a> : {{task.description}}</li>
+    <li>
+        <a href="/todolist/details/{{task.id}}">{{task.title}}</a> : {{task.description}}
+        <form action="/todolist/complete/{{task.id}}/?next={{request_path}}" class="task_form">
+            <input type="submit" class="btn btn-link" value="Complete" />
+        </form>
+        <form action="/todolist/edit/{{task.id}}" class="task_form">
+            <input type="submit" class="btn btn-link" value="Edit" />
+        </form>
+        <form action="/todolist/trash/{{task.id}}" class="task_form">
+            <input type="submit" class="btn btn-link" value="Trash" />
+        </form>
+    </li>
     {% endfor %}
 </ul>
 {% endblock %}

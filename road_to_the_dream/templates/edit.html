@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Add task </title>
+{% endblock%}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <label for="title">Title</label>
+    <br />
+    <input type="text" name="title" id="title">
+    <br />
+    <label for="description">Description</label>
+    <br />
+    <textarea name="description" id="description" > </textarea>
+    <br />
+    <div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="input-group date" id="datetimepicker1">
+                    <input type="text" class="form-control">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker();
+            });
+        </script>
+    </div>
+</div>
+    <select name="priority" id="id_priority">
+        <option value="H">High</option>
+        <option value="M">Medium</option>
+        <option value="L">Low</option>
+        <option value="N" selected="">None</option>
+    </select>
+    <div class="form-row field-tags">
+        <div>
+            <label for="id_tags">Tags:</label>
+            <div class="related-widget-wrapper">
+                <select name="tags" id="id_tags" multiple="multiple">
+                    {% for tag in tags %}
+                    <option value="{{ tag.id }}">{{ tag.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
+        </div>
+
+    </div>
+    <input type="submit" value="submit">
+</form>
+<a href="/">Go back</a>
+{% endblock%}

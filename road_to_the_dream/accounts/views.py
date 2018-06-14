@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect
 from .user_create_form import UserCreateForm
 from .login_form import LoginForm
 from django.contrib.auth.views import logout
+
+
 def signup(request):
     if request.method == 'POST':
         form = UserCreateForm(request.POST)
@@ -29,4 +31,4 @@ def login_view(request):
 
 def log_out(request):
     logout(request)
-    return redirect(request.GET.get('next'))
+    return redirect('/todolist')
