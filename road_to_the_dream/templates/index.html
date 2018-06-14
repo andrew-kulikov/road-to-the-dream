@@ -5,6 +5,9 @@
 {% endblock%}
 
 {% block content %}
+<form action="/todolist/add">
+    <input type="submit" class="btn btn-link" value="Add task">
+</form>
 <ul>
     {% for task in tasks %}
     <li>

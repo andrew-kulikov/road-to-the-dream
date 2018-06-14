@@ -37,6 +37,20 @@
         </div>
     </div>
     <br />
+    <div class="form-row field-tags">
+        <div>
+            <label for="list_id">List:</label>
+            <div class="related-widget-wrapper">
+                <select class="form-control" name="list_id" id="list_id">
+                    {% for list in task_lists %}
+                    <option value="{{ list.id }}">{{ list.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
+        </div>
+    </div>
+    <br />
     <div>
         <label for="deadline">Deadline:</label>
         <div class="row">

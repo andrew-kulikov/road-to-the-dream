@@ -9,7 +9,10 @@
 <p>Opisnie : {{task.description}} </p>
 <p>Ee sdelali: {{task.created}} </p>
 <p>Deadline: {{task.deadline}} </p>
-<p>Created user: {{task.user}} </p>
+<p>Created user: {{task.created_user}} </p>
+{% if completed %}
+<p>Completed user: {{task.completed_user}} </p>
+{% endif %}
 <p>Task list: {{task.task_list}} </p>
 <p>Status: {{task.get_status_display}} </p>
 <h5>Tags</h5>

@@ -5,6 +5,17 @@
 {% endblock%}
 
 {% block content %}
+{% for message in messages %}
+<p>{{message}}</p>
+{% endfor %}
+<h2>{{list.name}}</h2>
+<form>
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <input type="button" class="btn btn-secondary" value="Invite" onclick="window.location.href='/todolist/lists/invite'"/>
+        <input type="button" class="btn btn-secondary" value="Edit" onclick="window.location.href='/todolist/lists/edit/{{list.id}}'"/>
+        <input type="button" class="btn btn-secondary" value="Delete" onclick="window.location.href='/todolist/lists/delete/{{list.id}}'"/>
+    </div>
+</form>
 <h5>Users:</h5>
 <ul>
     {% for user in users %}

@@ -172,3 +172,7 @@ a.article, a.article:hover {
 .task_form {
     display: inline;
 }
+
+.tasklist_list {
+    display: inline;
+}

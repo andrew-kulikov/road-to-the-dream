@@ -1,12 +1,15 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Task, TaskList, Tag
 from datetime import datetime
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
+from .models import Task, TaskList, Tag
 
 
 @login_required(login_url='/accounts/login')
 def index(request):
-    tasks = Task.objects.filter(user=request.user, status='P')
+    tasks = Task.objects.filter(created_user=request.user, status='P')
     task_lists = TaskList.objects.filter(users__in=[request.user])
     tags = Tag.objects.all()
     context = {
@@ -20,8 +23,10 @@ def index(request):
 @login_required(login_url='/accounts/login')
 def details(request, task_id):
     task = Task.objects.get(id=task_id)
+    print(request.META.get('HTTP_REFERER'))
     context = {
-        'task': task
+        'task': task,
+        'completed': request.META.get('HTTP_REFERER') == 'http://localhost:8000/todolist/lists/completed/'
     }
     return render(request, 'details.html', context)
 
@@ -29,11 +34,12 @@ def details(request, task_id):
 @login_required(login_url='/accounts/login')
 def list_details(request, list_id):
     list = TaskList.objects.get(id=list_id)
-    tasks = list.task_set.all()
+    tasks = list.task_set.filter(status='P')
     users = list.users.all()
     context = {
         'tasks': tasks,
-        'users': users
+        'users': users,
+        'list': list
     }
     return render(request, 'list_details.html', context)
 
@@ -55,11 +61,20 @@ def add(request):
         description = request.POST['description']
         tags = request.POST.getlist('tags')
         priority = request.POST['priority']
-        print(request.POST)
+        list_id = request.POST['list_id']
         deadline = request.POST['deadline']
-        dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
+        dd = None
+        if deadline != '':
+            dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
         user = request.user
-        task = Task(title=title, description=description, user=user, priority=priority, deadline=dd)
+        task = Task(
+            title=title,
+            description=description,
+            created_user=user,
+            priority=priority,
+            deadline=dd,
+            task_list_id=int(list_id)
+        )
         task.save()
         for tag in tags:
             task.tags.add(Tag.objects.get(id=int(tag)))
@@ -77,13 +92,38 @@ def add_list(request):
         if 'is_private' in request.POST:
             is_private = True
         user = request.user
-        tasklist = TaskList(name=name, is_private=is_private)
+        tasklist = TaskList(name=name, is_private=is_private, created_user=user)
         tasklist.save()
         tasklist.users.add(user)
         tasklist.save()
-
         return redirect('/todolist')
     return render(request, 'add_tasklist.html')
+
+
+@login_required(login_url='/accounts/login')
+def edit_list(request, list_id):
+    if request.method == 'POST':
+        name = request.POST['name']
+        is_private = 'is_private' in request.POST
+        user = request.user
+        try:
+            tasklist = TaskList.objects.get(id=list_id, created_user=user)
+            tasklist.name = name
+            tasklist.is_private = is_private
+            tasklist.save()
+            if is_private:
+                tasklist.users.clear()
+                tasklist.users.add(user)
+                tasklist.save()
+        except Exception as e:
+            messages.warning(request, 'Ti ne admin')
+        return redirect('/todolist/lists/' + str(list_id))
+    tasklist = TaskList.objects.get(id=list_id)
+    context = {
+        'name': tasklist.name,
+        'is_private': tasklist.is_private
+    }
+    return render(request, 'add_tasklist.html', context)
 
 
 @login_required(login_url='/accounts/login')
@@ -111,6 +151,7 @@ def edit_task(request, task_id):
 @login_required(login_url='/accounts/login')
 def complete_task(request, task_id):
     task = Task.objects.get(id=task_id)
+    task.completed_user = request.user
     task.status = 'C'
     task.save()
     return redirect('/todolist')
@@ -132,6 +173,16 @@ def delete_task(request, task_id):
 
 
 @login_required(login_url='/accounts/login')
+def delete_list(request, list_id):
+    try:
+        list = TaskList.objects.get(id=list_id, created_user=request.user)
+        list.delete()
+    except Exception as e:
+        messages.warning(request, 'Ti ne admin')
+    return redirect('/todolist')
+
+
+@login_required(login_url='/accounts/login')
 def repair_task(request, task_id):
     task = Task.objects.get(id=task_id)
     task.status = 'P'
@@ -142,7 +193,7 @@ def repair_task(request, task_id):
 @login_required(login_url='/accounts/login')
 def completed(request):
     user = request.user
-    tasks = Task.objects.filter(status='C', user=user)
+    tasks = Task.objects.filter(status='C')
     context = {
         'tasks': tasks,
     }
