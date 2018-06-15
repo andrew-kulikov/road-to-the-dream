@@ -38,9 +38,9 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Settings</a></li>
+                        <!--li><a href="#">Settings</a></li>
                         <li><a href="#">Stats</a></li>
-                        <li><a href="#">Help</a></li>
+                        <li><a href="#">Help</a></li-->
                         <li><a href="/accounts/logout/?next={{request_path}}">Sign out</a></li>
                     </ul>
                 </div>
@@ -52,10 +52,10 @@
                     <a href="/todolist/">All</a>
                 </li>
                 <li>
-                    <a href="#">Today</a>
+                    <a href="/todolist/lists/today/">Today</a>
                 </li>
                 <li>
-                    <a href="#">Next week</a>
+                    <a href="/todolist/lists/next-week/">Next week</a>
                 </li>
                 <li>
                     <a href="#listsSubmenu" data-toggle="collapse" aria-expanded="false">Lists</a>
@@ -105,10 +105,6 @@
             {% endblock %}
         </div>
     </div>
-
-
-
-
 
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>

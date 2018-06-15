@@ -8,6 +8,8 @@ urlpatterns = [
     url(r'^lists/add/$', views.add_list),
     url(r'^lists/completed/$', views.completed),
     url(r'^lists/trash/$', views.trash),
+    url(r'^lists/today/$', views.today),
+    url(r'^lists/next-week/$', views.next_week),
     url(r'^lists/(?P<list_id>\w{0,50})/$', views.list_details),
     url(r'^lists/(?P<list_id>\w{0,50})/edit/$', views.edit_list),
     url(r'^lists/(?P<list_id>\w{0,50})/delete/$', views.delete_list),

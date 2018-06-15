@@ -1,0 +1,15 @@
+<ul  class="list-group">
+    {% for task in tasks %}
+    <li class="list-group-item">
+        <a href="/todolist/details/{{task.id}}" {% if task.status == 'O' %} style="color: red" {% endif %}>
+            {{task.title}}
+        </a>
+        {% if task.deadline %} - {{task.deadline}} {% endif %}
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <input type="button" class="btn btn-link" value="Complete" onclick="window.location.href='/todolist/complete/{{task.id}}/?next={{request_path}}'"/>
+            <input type="button" class="btn btn-link" value="Edit" onclick="window.location.href='/todolist/edit/{{task.id}}'"/>
+            <input type="button" class="btn btn-link" value="To trash" onclick="window.location.href='/todolist/trash/{{task.id}}'"/>
+        </div>
+    </li>
+    {% endfor %}
+</ul>

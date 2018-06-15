@@ -1,16 +1,20 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
+from dateutil.relativedelta import *
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.db.models import Q
 
 from .models import Task, TaskList, Tag
+from . import parsers
 
 
 @login_required(login_url='/accounts/login')
 def index(request):
-    tasks = Task.objects.filter(created_user=request.user, status='P')
+    parsers.check_overdue()
+    tasks = Task.objects.filter(Q(created_user=request.user) & Q(status='P') | Q(status='O'))
     task_lists = TaskList.objects.filter(users__in=[request.user])
     tags = Tag.objects.all()
     context = {
@@ -65,6 +69,8 @@ def add(request):
         priority = request.POST['priority']
         list_id = request.POST['list_id']
         deadline = request.POST['deadline']
+        period = request.POST['period']
+        days = request.POST.getlist('days')
         dd = None
         if deadline != '':
             dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
@@ -77,6 +83,11 @@ def add(request):
             deadline=dd,
             task_list_id=int(list_id)
         )
+        if dd:
+            task.period_val = period
+            task.period_count = 1
+            if period == 'W':
+                task.repeat_days = days
         task.save()
         for tag in tags:
             task.tags.add(Tag.objects.get(id=int(tag)))
@@ -168,14 +179,37 @@ def edit_task(request, task_id):
             messages.error(request, 'ti ne admin')
 
         return redirect('/todolist')
+    # print('---------', Task.objects.get(id=task_id).repeat_days)
     return render(request, 'edit.html', {'task': Task.objects.get(id=task_id)})
 
 
 @login_required(login_url='/accounts/login')
 def complete_task(request, task_id):
     task = Task.objects.get(id=task_id)
-    task.completed_user = request.user
-    task.status = 'C'
+    if task.period_val and task.period_val != 'N' and task.period_val != '':
+        if task.period_val == 'D':
+            task.deadline += relativedelta(days=+1)
+        elif task.period_val == 'W':
+            if task.repeat_days and len(task.repeat_days):
+                today = datetime.now().weekday()
+                days = [MO, TU, WE, TH, FR, SA, SU]
+                new_week = True
+                for day in task.repeat_days:
+                    if int(day) - 1 > today:
+                        new_week = False
+                        task.deadline += relativedelta(weekday=days[day-1])
+                if new_week:
+                    first_day_number = int(task.repeat_days[0]) - 1
+                    task.deadline += relativedelta(weekday=days[first_day_number])
+            else:
+                task.deadline += relativedelta(weeks=+1)
+        elif task.period_val == 'M':
+            task.deadline += relativedelta(months=+1)
+        elif task.period_val == 'Y':
+            task.deadline += relativedelta(years=+1)
+    else:
+        task.completed_user = request.user
+        task.status = 'C'
     task.save()
     return redirect('/todolist')
 
@@ -226,11 +260,29 @@ def completed(request):
 @login_required(login_url='/accounts/login')
 def trash(request):
     user = request.user
-    tasks = Task.objects.filter(status='T', user=user)
+    tasks = Task.objects.filter(status='T', created_user=user)
     context = {
         'tasks': tasks,
     }
     return render(request, 'trash.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def today(request):
+    tasks = Task.objects.filter(status='P', deadline__lt=date.today() + timedelta(days=1))
+    context = {
+        'tasks': tasks,
+    }
+    return render(request, 'today.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def next_week(request):
+    tasks = Task.objects.filter(status='P', deadline__lt=date.today() + relativedelta(weeks=+1))
+    context = {
+        'tasks': tasks,
+    }
+    return render(request, 'today.html', context)
 
 
 @login_required(login_url='/accounts/login')

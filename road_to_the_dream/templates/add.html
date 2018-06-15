@@ -54,23 +54,50 @@
     <div>
         <label for="deadline">Deadline:</label>
         <div class="row">
-        <div class='col-sm-6'>
-            <div class="form-group">
-                <div class='input-group date' id='deadline'>
-                    <input type='text' class="form-control" name="deadline" />
-                    <span class="input-group-addon">
+            <div class='col-sm-6'>
+                <div class="form-group">
+                    <div class='input-group date' id='deadline'>
+                        <input type='text' class="form-control" name="deadline" />
+                        <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
+                    </div>
                 </div>
             </div>
+            <script type="text/javascript">
+                $(function () {
+                    $('#deadline').datetimepicker();
+                });
+            </script>
         </div>
-        <script type="text/javascript">
-            $(function () {
-                $('#deadline').datetimepicker();
-            });
-        </script>
     </div>
+
+    <div class="row">
+        <div class="col col-sm-2">
+            <label for="period">Repeat every:</label>
+            <select class="form-control" name="period" id="period">
+                <option value="D">Daily</option>
+                <option value="W">Weekly</option>
+                <option value="M">Monthly</option>
+                <option value="Y">Yearly</option>
+                <option value="N" selected>None</option>
+            </select>
+        </div>
+        <div class="col col-sm-2">
+            <label for="days">Days:</label>
+            <select class="form-control" name="days" id="days" multiple="multiple">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="7">Sunday</option>
+            </select>
+        </div>
     </div>
+
+    <br />
     <input type="submit" class="btn btn-light" value="submit">
 
     <script src="./js/prettify-1.0.min.js"></script>
