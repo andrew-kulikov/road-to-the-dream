@@ -5,38 +5,63 @@
 {% endblock%}
 
 {% block content %}
-<h1>{{task.title}}</h1>
-<form action="/todolist/complete/{{task.id}}/?next={{request_path}}" class="task_form">
-    <input type="submit" class="btn btn-link" value="Complete" />
-</form>
-<form action="/todolist/edit/{{task.id}}" class="task_form">
-    <input type="submit" class="btn btn-link" value="Edit" />
-</form>
-<form action="/todolist/trash/{{task.id}}" class="task_form">
-    <input type="submit" class="btn btn-link" value="Trash" />
-</form>
-<p>Description:&nbsp {{task.description}} </p>
-<p>Created:&nbsp {{task.created}} </p>
-<p>Deadline: &nbsp {{task.deadline}} </p>
-{% if task.period_val != 'N' %}
-<p>Repeat: &nbsp {{task.get_period_val_display }} </p>
-{% endif %}
-{% if task.period_val == 'W' %}
-<p>Days: &nbsp {{task.repeat_days }} </p>
-{% endif %}
-<p>Created user:&nbsp {{task.created_user}} </p>
-{% if completed %}
-<p>Completed user:&nbsp {{task.completed_user}} </p>
-{% endif %}
-<p>Task list:&nbsp {{task.task_list}} </p>
-<p>Status:&nbsp {{task.get_status_display}} </p>
-<p>Priority:&nbsp {{task.get_priority_display}} </p>
-<h5>Tags:</h5>
-<ul>
-    {% for tag in task.tags.all %}
-    <li>
-        {{tag}}
-    </li>
-    {% endfor %}
-</ul>
+<div class="container">
+    <div class="row">
+        <div class="col col-sm-4">
+            <h1>{{task.title}}</h1>
+            <form action="/todolist/complete/{{task.id}}/?next={{request_path}}" class="task_form">
+                <input type="submit" class="btn btn-link" value="Complete" />
+            </form>
+            <form action="/todolist/edit/{{task.id}}" class="task_form">
+                <input type="submit" class="btn btn-link" value="Edit" />
+            </form>
+            <form action="/todolist/trash/{{task.id}}" class="task_form">
+                <input type="submit" class="btn btn-link" value="Trash" />
+            </form>
+
+
+            <p>Description:&nbsp {{task.description}} </p>
+            <p>Created:&nbsp {{task.created}} </p>
+            <p>Deadline: &nbsp {{task.deadline}} </p>
+            {% if task.period_val != 'N' %}
+            <p>Repeat: &nbsp {{task.get_period_val_display }} </p>
+            {% endif %}
+            {% if task.period_val == 'W' %}
+            <p>Days: &nbsp {{task.repeat_days }} </p>
+            {% endif %}
+            <p>Created user:&nbsp {{task.created_user}} </p>
+            {% if completed %}
+            <p>Completed user:&nbsp {{task.completed_user}} </p>
+            {% endif %}
+            <p>Task list:&nbsp {{task.task_list}} </p>
+            <p>Status:&nbsp {{task.get_status_display}} </p>
+            <p>Priority:&nbsp {{task.get_priority_display}} </p>
+            <h5>Tags:</h5>
+            <ul>
+                {% for tag in task.tags.all %}
+                <li>
+                    {{tag}}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col col-sm-6">
+            <h3>Subtasks:</h3>
+            <form method="post" class="form-group">
+                {% csrf_token %}
+                <label for="subtask_name">Name</label>
+                <div class="input-group">
+                    <input type="text" id="subtask_name" name="subtask_name" class="form-control">
+                    <input type="submit" class="btn btn-success">
+                </div>
+            </form>
+            <hr>
+            <ul class="list-group">
+                {% for st in task.subtask_set.all %}
+                <li>{{st.title}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
 {% endblock %}

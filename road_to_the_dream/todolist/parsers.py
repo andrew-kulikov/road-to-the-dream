@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from .models import Task
+from .models import Task, SubTask
 from django.db.models import Q
 from django.utils import timezone
 
@@ -14,4 +14,3 @@ def check_overdue():
             else:
                 task.status = 'O'
             task.save()
-

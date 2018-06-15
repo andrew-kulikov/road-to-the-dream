@@ -1,14 +1,14 @@
 from datetime import datetime, date, timedelta
-from dateutil.relativedelta import *
 
+from dateutil.relativedelta import *
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
 from django.db.models import Q
+from django.shortcuts import render, redirect
 
-from .models import Task, TaskList, Tag
 from . import parsers
+from .models import Task, TaskList, Tag, SubTask
 
 
 @login_required(login_url='/accounts/login')
@@ -28,7 +28,15 @@ def index(request):
 @login_required(login_url='/accounts/login')
 def details(request, task_id):
     task = Task.objects.get(id=task_id)
-    print(request.META.get('HTTP_REFERER'))
+    if request.method == 'POST':
+        if task.status == 'C':
+            task.status = 'P'
+            task.save()
+            parsers.check_overdue()
+        
+        title = request.POST['subtask_name']
+        st = SubTask(title=title, task=task)
+        st.save()
     context = {
         'task': task,
         'completed': request.META.get('HTTP_REFERER') == 'http://localhost:8000/todolist/lists/completed/'

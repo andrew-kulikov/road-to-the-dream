@@ -90,3 +90,17 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class SubTask(models.Model):
+    STATUS = (
+        ('P', 'Pending'),
+        ('C', 'Completed'),
+    )
+
+    title = models.CharField(max_length=100)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, blank=False, null=False)
+    status = models.CharField(max_length=1, default='P', choices=STATUS)
+
+    def __str__(self):
+        return self.title
