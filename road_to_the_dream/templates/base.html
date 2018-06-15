@@ -75,8 +75,14 @@
                 <a href="#tagsSubmenu" data-toggle="collapse" aria-expanded="false">Tags</a>
                 <ul class="collapse list-unstyled" id="tagsSubmenu">
                     {% for tag in tags %}
-                    <li><a href="/todolist/tags/{{tag.id}}">{{ tag.name }}</a></li>
+                    <li><a href="/todolist/tags/details/{{tag.id}}">{{ tag.name }}</a></li>
                     {% endfor %}
+                    <li>
+                        <a href="/todolist/tags/add/?next={{request_path}}">
+                            <i class="glyphicon glyphicon-plus  "></i>
+                            Add
+                        </a>
+                    </li>
                 </ul>
             </li>
             <li>

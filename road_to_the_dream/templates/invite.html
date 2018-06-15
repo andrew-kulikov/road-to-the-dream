@@ -1,10 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block title %}
+<title> RD - Invite </title>
+{% endblock%}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <label for="iser_id">Username</label>
+    <br />
+    <select class="form-control" name="user_id" id="iser_id">
+        {% for user in users %}
+        <option value="{{ user.id }}">{{ user }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="submit">
+</form>
+<a href="/">Go back</a>
+{% endblock%}

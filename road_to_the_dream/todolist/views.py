@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
 
 from .models import Task, TaskList, Tag
 
@@ -39,7 +40,8 @@ def list_details(request, list_id):
     context = {
         'tasks': tasks,
         'users': users,
-        'list': list
+        'list': list,
+        'superuser': request.user.is_superuser
     }
     return render(request, 'list_details.html', context)
 
@@ -98,6 +100,19 @@ def add_list(request):
         tasklist.save()
         return redirect('/todolist')
     return render(request, 'add_tasklist.html')
+
+
+@login_required(login_url='/accounts/login')
+def add_tag(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        user = request.user
+        tag = Tag(name=name)
+        tag.save()
+        tag.users.add(user)
+        tag.save()
+        return redirect('/todolist')
+    return render(request, 'add_tag.html')
 
 
 @login_required(login_url='/accounts/login')
@@ -208,3 +223,35 @@ def trash(request):
         'tasks': tasks,
     }
     return render(request, 'trash.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def invite(request, list_id):
+    if request.method == 'POST':
+        user_id = request.POST['user_id']
+        try:
+            tasklist = TaskList.objects.get(id=list_id, created_user=request.user)
+            invited_user = User.objects.get(id=int(user_id))
+            tasklist.users.add(invited_user)
+            tasklist.save()
+            list_tags = Tag.objects.filter(task_set__in=tasklist.task_set)
+            for tag in list_tags:
+                invited_user.tag_set.add(tag)
+            invited_user.save()
+        except Exception as e:
+            messages.error(request, 'ti ne admin')
+        return redirect('/todolist/lists/' + str(list_id))
+    tasklist = TaskList.objects.get(id=list_id)
+    context = {
+        'users': User.objects.exclude(all_lists__in=[tasklist])
+    }
+    return render(request, 'invite.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def kick(request, list_id, user_id):
+    tasklist = TaskList.objects.get(id=list_id, created_user=request.user)
+    kicked_user = User.objects.get(id=int(user_id))
+    tasklist.users.remove(kicked_user)
+    tasklist.save()
+    return redirect('/todolist/lists/' + str(list_id))

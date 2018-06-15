@@ -5,9 +5,9 @@
 {% endblock%}
 
 {% block content %}
-<h1>Eta taska nazivayestsya {{task.title}}</h1>
-<p>Opisnie : {{task.description}} </p>
-<p>Ee sdelali: {{task.created}} </p>
+<h1>{{task.title}}</h1>
+<p>Description : {{task.description}} </p>
+<p>Created: {{task.created}} </p>
 <p>Deadline: {{task.deadline}} </p>
 <p>Created user: {{task.created_user}} </p>
 {% if completed %}
