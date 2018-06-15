@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title> RD - Add task </title>
+<title> RD - Edit task </title>
 {% endblock%}
 
 {% block content %}
@@ -9,18 +9,55 @@
     {% csrf_token %}
     <label for="title">Title</label>
     <br />
-    <input type="text" name="title" id="title">
+    <input class="form-control" type="text" name="title" id="title" value="{{task.title}}">
     <br />
     <label for="description">Description</label>
     <br />
-    <textarea name="description" id="description" > </textarea>
+    <textarea class="form-control" name="description" id="description">{{task.description}}</textarea>
     <br />
-    <div class="container">
-    <div class="row">
-        <div class="col-sm-6">
+    <label for="priority">Priority</label>
+    <select class="form-control" name="priority" id="priority">
+        <option value="H" {% if task.priority == H %}selected{% endif %}>High</option>
+        <option value="M" {% if task.priority == M %}selected{% endif %}>Medium</option>
+        <option value="L" {% if task.priority == L %}selected{% endif %}>Low</option>
+        <option value="N" {% if task.priority == N %}selected{% endif %}>None</option>
+    </select>
+    <br />
+    <div class="form-row field-tags">
+        <div>
+            <label for="id_tags">Tags:</label>
+            <div class="related-widget-wrapper">
+                <select class="form-control" name="tags" id="id_tags" multiple="multiple">
+                    {% for tag in tags %}
+                    <option value="{{ tag.id }}" {% if tag in task.tags %}selected{% endif %}>{{ tag.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
+        </div>
+    </div>
+    <br />
+    <div class="form-row field-tags">
+        <div>
+            <label for="list_id">List:</label>
+            <div class="related-widget-wrapper">
+                <select class="form-control" name="list_id" id="list_id">
+                    {% for list in task_lists %}
+                    <option value="{{ list.id }}" {% if task.task_list == list %}selected{% endif %}>{{ list.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
+        </div>
+    </div>
+    <br />
+    <div>
+        <label for="deadline">Deadline:</label>
+        <div class="row">
+        <div class='col-sm-6'>
             <div class="form-group">
-                <div class="input-group date" id="datetimepicker1">
-                    <input type="text" class="form-control">
+                <div class='input-group date' id='deadline'>
+                    <input type='text' class="form-control" name="deadline" value="{{task.deadline}}" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
@@ -29,32 +66,25 @@
         </div>
         <script type="text/javascript">
             $(function () {
-                $('#datetimepicker1').datetimepicker();
+                $('#deadline').datetimepicker();
             });
         </script>
     </div>
-</div>
-    <select name="priority" id="id_priority">
-        <option value="H">High</option>
-        <option value="M">Medium</option>
-        <option value="L">Low</option>
-        <option value="N" selected="">None</option>
-    </select>
-    <div class="form-row field-tags">
-        <div>
-            <label for="id_tags">Tags:</label>
-            <div class="related-widget-wrapper">
-                <select name="tags" id="id_tags" multiple="multiple">
-                    {% for tag in tags %}
-                    <option value="{{ tag.id }}">{{ tag.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
-        </div>
-
     </div>
-    <input type="submit" value="submit">
+    <input type="submit" class="btn btn-light" value="submit">
+
+    <script src="./js/prettify-1.0.min.js"></script>
+    <script src="./js/base.js"></script>
+    <script>
+        if (top != self) { top.location.replace(self.location.href); }
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-47462200-1', 'eonasdan.github.io');
+        ga('send', 'pageview');
+    </script>
 </form>
 <a href="/">Go back</a>
 {% endblock%}

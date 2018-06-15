@@ -7,7 +7,7 @@ def add_variable_to_context(request):
         tasklists = TaskList.objects.filter(users__in=[request.user])
     return {
         'task_lists': tasklists,
-        'tags': Tag.objects.all(),
+        'tags': Tag.objects.filter(users__in=[request.user]),
         'user': request.user,
         'request_path': request.path,
     }

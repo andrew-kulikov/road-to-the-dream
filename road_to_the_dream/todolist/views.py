@@ -148,19 +148,27 @@ def edit_task(request, task_id):
         description = request.POST['description']
         tags = request.POST.getlist('tags')
         priority = request.POST['priority']
-        user = request.user
-        task = Task.objects.get(id=task_id)
-        task.title = title
-        task.user = user
-        task.priority = priority
-        task.description = description
-        task.save()
-        for tag in tags:
-            task.tags.add(Tag.objects.get(id=int(tag)))
+        list_id = request.POST['list_id']
+        deadline = request.POST['deadline']
+        dd = None
+        if deadline != '':
+            dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
+        try:
+            task = Task.objects.get(id=task_id, created_user=request.user)
+            task.title = title
+            task.priority = priority
+            task.description = description
+            task.task_list = TaskList.objects.get(id=list_id)
+            task.deadline = dd
             task.save()
+            for tag in tags:
+                task.tags.add(Tag.objects.get(id=int(tag)))
+                task.save()
+        except Exception as e:
+            messages.error(request, 'ti ne admin')
 
         return redirect('/todolist')
-    return render(request, 'edit.html')
+    return render(request, 'edit.html', {'task': Task.objects.get(id=task_id)})
 
 
 @login_required(login_url='/accounts/login')
