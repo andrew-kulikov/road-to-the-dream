@@ -8,10 +8,10 @@
 <form action="/todolist/add">
     <input type="submit" class="btn btn-link" value="Add task">
 </form>
-<ul>
+<ul class="list-group">
     {% for task in tasks %}
-    <li>
-        <a href="/todolist/details/{{task.id}}">{{task.title}}</a> : {{task.description}}
+    <li class="list-group-item">
+        <a href="/todolist/details/{{task.id}}">{{task.title}}</a> {% if task.deadline %} - {{task.deadline}} {% endif %}
         <form action="/todolist/complete/{{task.id}}/?next={{request_path}}" class="task_form">
             <input type="submit" class="btn btn-link" value="Complete" />
         </form>

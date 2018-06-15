@@ -6,6 +6,15 @@
 
 {% block content %}
 <h1>{{task.title}}</h1>
+<form action="/todolist/complete/{{task.id}}/?next={{request_path}}" class="task_form">
+    <input type="submit" class="btn btn-link" value="Complete" />
+</form>
+<form action="/todolist/edit/{{task.id}}" class="task_form">
+    <input type="submit" class="btn btn-link" value="Edit" />
+</form>
+<form action="/todolist/trash/{{task.id}}" class="task_form">
+    <input type="submit" class="btn btn-link" value="Trash" />
+</form>
 <p>Description : {{task.description}} </p>
 <p>Created: {{task.created}} </p>
 <p>Deadline: {{task.deadline}} </p>
@@ -15,7 +24,8 @@
 {% endif %}
 <p>Task list: {{task.task_list}} </p>
 <p>Status: {{task.get_status_display}} </p>
-<h5>Tags</h5>
+<p>Priority: {{task.get_priority_display}} </p>
+<h5>Tags:</h5>
 <ul>
     {% for tag in task.tags.all %}
     <li>

@@ -2,10 +2,11 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from multiselectfield import MultiSelectField
 
 
 class Tag(models.Model):
-    users = models.ManyToManyField(User, default=None, null=True, blank=True)
+    users = models.ManyToManyField(User, default=None, blank=True)
     name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -15,7 +16,7 @@ class Tag(models.Model):
 class TaskList(models.Model):
     name = models.CharField(max_length=50)
     is_private = models.BooleanField(default=True)
-    users = models.ManyToManyField(User, related_name='all_lists', default=None, null=True, blank=True)
+    users = models.ManyToManyField(User, related_name='all_lists', default=None, blank=True)
     created_user = models.ForeignKey(
         User,
         related_name='created_lists',
@@ -37,8 +38,25 @@ class Task(models.Model):
     )
     STATUS = (
         ('P', 'Pending'),
+        ('O', 'Overdue'),
         ('C', 'Completed'),
         ('T', 'Trash'),
+    )
+    DAYS = (
+        (1, 'Monday'),
+        (2, 'Tuesday'),
+        (3, 'Wednesday'),
+        (4, 'Thursday '),
+        (5, 'Friday'),
+        (6, 'Saturday'),
+        (7, 'Sunday'),
+    )
+    PERIODS = (
+        ('D', 'Daily'),
+        ('W', 'Weekly'),
+        ('M', 'Monthly'),
+        ('Y', 'Yearly'),
+        ('N', 'None')
     )
 
     title = models.CharField(max_length=200)
@@ -59,10 +77,13 @@ class Task(models.Model):
         default=None,
         null=True,
         blank=True)
-    tags = models.ManyToManyField(Tag, blank=True, null=True)
+    tags = models.ManyToManyField(Tag, blank=True)
     task_list = models.ForeignKey(TaskList, on_delete=models.CASCADE, default=None, null=True, blank=True)
     priority = models.CharField(max_length=1, choices=PRIORITIES, default='N')
     status = models.CharField(max_length=1, choices=STATUS, default='P')
+    repeat_days = MultiSelectField(max_length=3, max_choices=7, choices=DAYS, null=True, blank=True)
+    period_count = models.IntegerField(default=0, blank=True)
+    period_val = models.CharField(max_length=1, choices=PERIODS, blank=True, default='N')
 
     class Meta:
         ordering = ('deadline',)
