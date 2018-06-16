@@ -1,6 +1,18 @@
-<ul  class="list-group">
+<ul class="list-group">
+    <form method="post" class="form-group">
+    {% csrf_token %}
+        <label for="sort_type">Sort by</label>
+        <select class="form-control" name="sort_type" id="sort_type">
+            <option value="deadline">Deadline</option>
+            <option value="priority">Priority</option>
+        </select>
+        <input type="submit" class="btn btn-success">
+    </form>
     {% for task in tasks %}
     <li class="list-group-item">
+        {% if task.period_val != 'N' %}
+        <span class="glyphicon glyphicon-repeat" ></span>
+        {% endif %}
         <a href="/todolist/details/{{task.id}}" {% if task.status == 'O' %} style="color: red" {% endif %}>
             {{task.title}}
         </a>

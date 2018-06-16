@@ -56,9 +56,31 @@
                 </div>
             </form>
             <hr>
+            <h2>Pending</h2>
             <ul class="list-group">
-                {% for st in task.subtask_set.all %}
-                <li>{{st.title}}</li>
+                {% for st in pending_st %}
+                <li>{{st.title}}
+                    <form action="/todolist/subtasks/{{st.id}}/complete/" class="task_form">
+                        <input type="submit" class="btn btn-link" value="Complete" />
+                    </form>
+                    <form action="/todolist/subtasks/{{st.id}}/delete/" class="task_form">
+                        <input type="submit" class="btn btn-link" value="Delete" />
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            <hr>
+            <h2>Completed</h2>
+            <ul class="list-group">
+                {% for st in completed_st %}
+                <li>{{st.title}}
+                    <form action="/todolist/subtasks/{{st.id}}/repair/" class="task_form">
+                        <input type="submit" class="btn btn-link" value="Repair" />
+                    </form>
+                    <form action="/todolist/subtasks/{{st.id}}/delete/" class="task_form">
+                        <input type="submit" class="btn btn-link" value="Delete" />
+                    </form>
+                </li>
                 {% endfor %}
             </ul>
         </div>

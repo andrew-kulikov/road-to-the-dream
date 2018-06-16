@@ -17,10 +17,10 @@
     <br />
     <label for="priority">Priority</label>
     <select class="form-control" name="priority" id="priority">
-        <option value="H" {% if task.priority == H %}selected{% endif %}>High</option>
-        <option value="M" {% if task.priority == M %}selected{% endif %}>Medium</option>
-        <option value="L" {% if task.priority == L %}selected{% endif %}>Low</option>
-        <option value="N" {% if task.priority == N %}selected{% endif %}>None</option>
+        <option value="0" {% if task.priority == H %}selected{% endif %}>High</option>
+        <option value="1" {% if task.priority == M %}selected{% endif %}>Medium</option>
+        <option value="2" {% if task.priority == L %}selected{% endif %}>Low</option>
+        <option value="-1" {% if task.priority == N %}selected{% endif %}>None</option>
     </select>
     <br />
     <div class="form-row field-tags">
@@ -29,7 +29,7 @@
             <div class="related-widget-wrapper">
                 <select class="form-control" name="tags" id="id_tags" multiple="multiple">
                     {% for tag in tags %}
-                    <option value="{{ tag.id }}" {% if tag in task.tags %}selected{% endif %}>{{ tag.name }}</option>
+                    <option value="{{ tag.id }}" {% if tag in task.tags.all %}selected{% endif %}>{{ tag.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -54,23 +54,50 @@
     <div>
         <label for="deadline">Deadline:</label>
         <div class="row">
-        <div class='col-sm-6'>
-            <div class="form-group">
-                <div class='input-group date' id='deadline'>
-                    <input type='text' class="form-control" name="deadline" value="{{task.deadline}}" />
-                    <span class="input-group-addon">
+            <div class='col-sm-6'>
+                <div class="form-group">
+                    <div class='input-group date' id='deadline'>
+                        <input type='text' class="form-control" name="deadline" value="{{task.deadline}}" />
+                        <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
+                    </div>
                 </div>
             </div>
+            <script type="text/javascript">
+                $(function () {
+                    $('#deadline').datetimepicker();
+                });
+            </script>
         </div>
-        <script type="text/javascript">
-            $(function () {
-                $('#deadline').datetimepicker();
-            });
-        </script>
     </div>
+    <div class="row">
+        <div class="col col-sm-2">
+            <label for="period">Repeat every:</label>
+            <input type="number" min="1" name="count" class="form-control" style="margin-bottom:10px">
+            <select class="form-control" name="period" id="period">
+                <option value="D">Day</option>
+                <option value="W">Week</option>
+                <option value="M">Month</option>
+                <option value="Y">Year</option>
+                <option value="N" selected>None</option>
+            </select>
+        </div>
+        <div class="col col-sm-2">
+            <label for="days">Days:</label>
+            <select class="form-control" name="days" id="days" multiple="multiple">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="7">Sunday</option>
+            </select>
+        </div>
     </div>
+
+    <br />
     <input type="submit" class="btn btn-light" value="submit">
 
     <script src="./js/prettify-1.0.min.js"></script>
@@ -86,5 +113,4 @@
         ga('send', 'pageview');
     </script>
 </form>
-<a href="/">Go back</a>
 {% endblock%}

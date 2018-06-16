@@ -13,8 +13,13 @@ from .models import Task, TaskList, Tag, SubTask
 
 @login_required(login_url='/accounts/login')
 def index(request):
+    sort_type = None
+    if request.method == 'POST':
+        sort_type = request.POST['sort_type']
     parsers.check_overdue()
     tasks = Task.objects.filter(Q(created_user=request.user) & Q(status='P') | Q(status='O'))
+    if sort_type:
+        tasks = tasks.order_by(sort_type)
     task_lists = TaskList.objects.filter(users__in=[request.user])
     tags = Tag.objects.all()
     context = {
@@ -33,13 +38,14 @@ def details(request, task_id):
             task.status = 'P'
             task.save()
             parsers.check_overdue()
-        
+
         title = request.POST['subtask_name']
         st = SubTask(title=title, task=task)
         st.save()
     context = {
         'task': task,
-        'completed': request.META.get('HTTP_REFERER') == 'http://localhost:8000/todolist/lists/completed/'
+        'pending_st': task.subtask_set.filter(status='P'),
+        'completed_st': task.subtask_set.filter(status='C'),
     }
     return render(request, 'details.html', context)
 
@@ -74,11 +80,12 @@ def add(request):
         title = request.POST['title']
         description = request.POST['description']
         tags = request.POST.getlist('tags')
-        priority = request.POST['priority']
+        priority = int(request.POST['priority'])
         list_id = request.POST['list_id']
         deadline = request.POST['deadline']
         period = request.POST['period']
         days = request.POST.getlist('days')
+        count = request.POST['count']
         dd = None
         if deadline != '':
             dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
@@ -93,13 +100,14 @@ def add(request):
         )
         if dd:
             task.period_val = period
-            task.period_count = 1
+            task.period_count = int(count)
             if period == 'W':
                 task.repeat_days = days
         task.save()
+        task.tags.clear()
         for tag in tags:
             task.tags.add(Tag.objects.get(id=int(tag)))
-            task.save()
+        task.save()
 
         return redirect('/todolist')
     return render(request, 'add.html')
@@ -166,12 +174,16 @@ def edit_task(request, task_id):
         title = request.POST['title']
         description = request.POST['description']
         tags = request.POST.getlist('tags')
-        priority = request.POST['priority']
+        priority = int(request.POST['priority'])
         list_id = request.POST['list_id']
         deadline = request.POST['deadline']
+        period = request.POST['period']
+        days = request.POST.getlist('days')
+        count = request.POST['count']
         dd = None
         if deadline != '':
             dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
+            print(dd)
         try:
             task = Task.objects.get(id=task_id, created_user=request.user)
             task.title = title
@@ -180,9 +192,17 @@ def edit_task(request, task_id):
             task.task_list = TaskList.objects.get(id=list_id)
             task.deadline = dd
             task.save()
+            print(task.deadline)
+            if dd:
+                task.period_val = period
+                task.period_count = int(count)
+                if period == 'W':
+                    task.repeat_days = days
+            task.save()
+            task.tags.clear()
             for tag in tags:
                 task.tags.add(Tag.objects.get(id=int(tag)))
-                task.save()
+            task.save()
         except Exception as e:
             messages.error(request, 'ti ne admin')
 
@@ -194,30 +214,7 @@ def edit_task(request, task_id):
 @login_required(login_url='/accounts/login')
 def complete_task(request, task_id):
     task = Task.objects.get(id=task_id)
-    if task.period_val and task.period_val != 'N' and task.period_val != '':
-        if task.period_val == 'D':
-            task.deadline += relativedelta(days=+1)
-        elif task.period_val == 'W':
-            if task.repeat_days and len(task.repeat_days):
-                today = datetime.now().weekday()
-                days = [MO, TU, WE, TH, FR, SA, SU]
-                new_week = True
-                for day in task.repeat_days:
-                    if int(day) - 1 > today:
-                        new_week = False
-                        task.deadline += relativedelta(weekday=days[day-1])
-                if new_week:
-                    first_day_number = int(task.repeat_days[0]) - 1
-                    task.deadline += relativedelta(weekday=days[first_day_number])
-            else:
-                task.deadline += relativedelta(weeks=+1)
-        elif task.period_val == 'M':
-            task.deadline += relativedelta(months=+1)
-        elif task.period_val == 'Y':
-            task.deadline += relativedelta(years=+1)
-    else:
-        task.completed_user = request.user
-        task.status = 'C'
+    task = parsers.complete_task(task, request.user)
     task.save()
     return redirect('/todolist')
 
@@ -250,6 +247,8 @@ def delete_list(request, list_id):
 @login_required(login_url='/accounts/login')
 def repair_task(request, task_id):
     task = Task.objects.get(id=task_id)
+    for st in task.subtask_set.all():
+        st.status = 'P'
     task.status = 'P'
     task.save()
     return redirect('/todolist')
@@ -323,3 +322,30 @@ def kick(request, list_id, user_id):
     tasklist.users.remove(kicked_user)
     tasklist.save()
     return redirect('/todolist/lists/' + str(list_id))
+
+
+@login_required(login_url='/accounts/login')
+def complete_subtask(request, subtask_id):
+    st = SubTask.objects.get(id=subtask_id)
+    st.status = 'C'
+    st.save()
+    task = st.task
+    if task.subtask_set.count() == task.subtask_set.filter(status='C').count():
+        complete_task(request, task.id)
+    return redirect('/todolist/details/' + str(st.task_id))
+
+
+@login_required(login_url='/accounts/login')
+def delete_subtask(request, subtask_id):
+    st = SubTask.objects.get(id=subtask_id)
+    st.delete()
+    return redirect('/todolist/details/' + str(st.task_id))
+
+
+@login_required(login_url='/accounts/login')
+def repair_subtask(request, subtask_id):
+    st = SubTask.objects.get(id=subtask_id)
+    st.status = 'P'
+    st.save()
+    repair_task(request, st.task_id)
+    return redirect('/todolist/details/' + str(st.task_id))

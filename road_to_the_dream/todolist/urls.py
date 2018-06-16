@@ -4,7 +4,10 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^details/(?P<task_id>\w{0,50})/$', views.details),
+    url(r'^details/(?P<task_id>\d{1,50})/$', views.details),
+    url(r'^subtasks/(?P<subtask_id>\w{0,50})/complete/$', views.complete_subtask),
+    url(r'^subtasks/(?P<subtask_id>\w{0,50})/delete/$', views.delete_subtask),
+    url(r'^subtasks/(?P<subtask_id>\w{0,50})/repair/$', views.repair_subtask),
     url(r'^lists/add/$', views.add_list),
     url(r'^lists/completed/$', views.completed),
     url(r'^lists/trash/$', views.trash),
