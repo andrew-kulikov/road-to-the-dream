@@ -74,25 +74,26 @@
     <div class="row">
         <div class="col col-sm-2">
             <label for="period">Repeat every:</label>
-            <input type="number" min="1" name="count" class="form-control" style="margin-bottom:10px">
+            <input type="number" min="1" name="count" class="form-control"
+                   style="margin-bottom:10px" value="{{task.period_count}}">
             <select class="form-control" name="period" id="period">
-                <option value="D">Day</option>
-                <option value="W">Week</option>
-                <option value="M">Month</option>
-                <option value="Y">Year</option>
-                <option value="N" selected>None</option>
+                <option value="D" {% if task.period_val == 'D' %} selected {% endif %}>Day</option>
+                <option value="W" {% if task.period_val == 'W' %} selected {% endif %}>Week</option>
+                <option value="M" {% if task.period_val == 'M' %} selected {% endif %}>Month</option>
+                <option value="Y" {% if task.period_val == 'Y' %} selected {% endif %}>Year</option>
+                <option value="N" {% if task.period_val == 'N' %} selected {% endif %}>None</option>
             </select>
         </div>
         <div class="col col-sm-2">
             <label for="days">Days:</label>
             <select class="form-control" name="days" id="days" multiple="multiple">
-                <option value="1" {% if 1 in selected_days %} selected {% endif %}>Monday</option>
-                <option value="2" {% if 2 in selected_days %} selected {% endif %}>Tuesday</option>
-                <option value="3" {% if 3 in selected_days %} selected {% endif %}>Wednesday</option>
-                <option value="4" {% if 4 in selected_days %} selected {% endif %}>Thursday</option>
-                <option value="5" {% if 5 in selected_days %} selected {% endif %}>Friday</option>
-                <option value="6" {% if 6 in selected_days %} selected {% endif %}>Saturday</option>
-                <option value="7" {% if 7 in selected_days %} selected {% endif %}>Sunday</option>
+                <option value="1" {% if '1' in selected_days %} selected {% endif %}>Monday</option>
+                <option value="2" {% if '2' in selected_days %} selected {% endif %}>Tuesday</option>
+                <option value="3" {% if '3' in selected_days %} selected {% endif %}>Wednesday</option>
+                <option value="4" {% if '4' in selected_days %} selected {% endif %}>Thursday</option>
+                <option value="5" {% if '5' in selected_days %} selected {% endif %}>Friday</option>
+                <option value="6" {% if '6' in selected_days %} selected {% endif %}>Saturday</option>
+                <option value="7" {% if '7' in selected_days %} selected {% endif %}>Sunday</option>
             </select>
         </div>
     </div>

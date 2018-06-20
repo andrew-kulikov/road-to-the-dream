@@ -211,8 +211,11 @@ def edit_task(request, task_id):
     context = {
         'task': task,
         'selected_tags': task.tags.all(),
-        'deadline': datetime.strftime(task.deadline, settings.DATETIME_PATTERN)
+        'deadline': datetime.strftime(task.deadline, settings.DATETIME_PATTERN),
+        'selected_days': task.repeat_days
     }
+    for x in context['selected_days']:
+        print(x, type(x))
     return render(request, 'edit.html', context)
 
 
