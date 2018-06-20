@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect
+from django.conf import settings
 
 from . import parsers
 from .models import Task, TaskList, Tag, SubTask
@@ -88,7 +89,7 @@ def add(request):
         count = request.POST['count']
         dd = None
         if deadline != '':
-            dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
+            dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
         user = request.user
         task = Task(
             title=title,
@@ -183,7 +184,7 @@ def edit_task(request, task_id):
         dd = None
         if deadline != '':
             # date pattern to config (locales?)
-            dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
+            dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
         try:
             task = get_object_or_404(Task, id=task_id, created_user=request.user)
             task.title = title
@@ -206,11 +207,11 @@ def edit_task(request, task_id):
             messages.error(request, 'ti ne admin')
 
         return redirect('/todolist')
-    # print('---------', Task.objects.get(id=task_id).repeat_days)
     task = get_object_or_404(Task, id=task_id)
     context = {
         'task': task,
-        'selected_tags': task.tags.all()
+        'selected_tags': task.tags.all(),
+        'deadline': datetime.strftime(task.deadline, settings.DATETIME_PATTERN)
     }
     return render(request, 'edit.html', context)
 
