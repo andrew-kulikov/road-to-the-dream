@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect
 
 from . import parsers
 from .models import Task, TaskList, Tag, SubTask
@@ -14,8 +14,8 @@ from .models import Task, TaskList, Tag, SubTask
 @login_required(login_url='/accounts/login')
 def index(request):
     sort_type = None
-    if request.method == 'POST':
-        sort_type = request.POST['sort_type']
+    if 'sort_type' in request.GET:
+        sort_type = request.GET['sort_type']
     parsers.check_overdue()
     tasks = Task.objects.filter(Q(created_user=request.user) & Q(status='P') | Q(status='O'))
     if sort_type:

@@ -1,6 +1,5 @@
 <ul class="list-group">
-    <form method="post" class="form-group">
-    {% csrf_token %}
+    <form method="get" class="form-group">
         <label for="sort_type">Sort by</label>
         <select class="form-control" name="sort_type" id="sort_type">
             <option value="deadline">Deadline</option>
