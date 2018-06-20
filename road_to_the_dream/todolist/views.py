@@ -149,7 +149,7 @@ def edit_list(request, list_id):
         is_private = 'is_private' in request.POST
         user = request.user
         try:
-            tasklist = TaskList.objects.get(id=list_id, created_user=user)
+            tasklist = get_object_or_404(TaskList, id=list_id, created_user=user)
             tasklist.name = name
             tasklist.is_private = is_private
             tasklist.save()
@@ -182,17 +182,16 @@ def edit_task(request, task_id):
         count = request.POST['count']
         dd = None
         if deadline != '':
+            # date pattern to config (locales?)
             dd = datetime.strptime(deadline, '%m/%d/%Y %I:%M %p')
-            print(dd)
         try:
-            task = Task.objects.get(id=task_id, created_user=request.user)
+            task = get_object_or_404(Task, id=task_id, created_user=request.user)
             task.title = title
             task.priority = priority
             task.description = description
-            task.task_list = TaskList.objects.get(id=list_id)
+            task.task_list = get_object_or_404(TaskList, id=list_id)
             task.deadline = dd
             task.save()
-            print(task.deadline)
             if dd:
                 task.period_val = period
                 task.period_count = int(count)
@@ -208,7 +207,12 @@ def edit_task(request, task_id):
 
         return redirect('/todolist')
     # print('---------', Task.objects.get(id=task_id).repeat_days)
-    return render(request, 'edit.html', {'task': Task.objects.get(id=task_id)})
+    task = get_object_or_404(Task, id=task_id)
+    context = {
+        'task': task,
+        'selected_tags': task.tags.all()
+    }
+    return render(request, 'edit.html', context)
 
 
 @login_required(login_url='/accounts/login')
