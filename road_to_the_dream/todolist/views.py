@@ -1,13 +1,13 @@
 from datetime import datetime, date, timedelta
 
 from dateutil.relativedelta import *
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect
-from django.conf import settings
 from django.http import HttpResponseBadRequest
+from django.shortcuts import render, get_object_or_404, redirect
 
 from . import parsers
 from .models import Task, TaskList, Tag, SubTask
@@ -131,10 +131,10 @@ def add_list(request):
             return HttpResponseBadRequest()
         is_private = 'is_private' in request.POST
         user = request.user
-        tasklist = TaskList(name=name, is_private=is_private, created_user=user)
-        tasklist.save()
-        tasklist.users.add(user)
-        tasklist.save()
+        task_list = TaskList(name=name, is_private=is_private, created_user=user)
+        task_list.save()
+        task_list.users.add(user)
+        task_list.save()
         return redirect('/todolist')
     return render(request, 'add_tasklist.html')
 
