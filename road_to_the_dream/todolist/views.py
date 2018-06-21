@@ -33,7 +33,7 @@ def index(request):
 
 @login_required(login_url='/accounts/login')
 def details(request, task_id):
-    task = Task.objects.get(id=task_id)
+    task = get_object_or_404(Task, id=task_id)
     if request.method == 'POST':
         if task.status == 'C':
             task.status = 'P'
@@ -53,7 +53,7 @@ def details(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def list_details(request, list_id):
-    list = TaskList.objects.get(id=list_id)
+    list = get_object_or_404(TaskList, id=list_id)
     tasks = list.task_set.filter(status='P')
     users = list.users.all()
     context = {
@@ -161,7 +161,7 @@ def edit_list(request, list_id):
         except Exception as e:
             messages.warning(request, 'Ti ne admin')
         return redirect('/todolist/lists/' + str(list_id))
-    tasklist = TaskList.objects.get(id=list_id)
+    tasklist = get_object_or_404(TaskList, id=list_id)
     context = {
         'name': tasklist.name,
         'is_private': tasklist.is_private
@@ -190,6 +190,7 @@ def edit_task(request, task_id):
             task.title = title
             task.priority = priority
             task.description = description
+            # ??
             task.task_list = get_object_or_404(TaskList, id=list_id)
             task.deadline = dd
             task.save()
@@ -214,14 +215,12 @@ def edit_task(request, task_id):
         'deadline': datetime.strftime(task.deadline, settings.DATETIME_PATTERN),
         'selected_days': task.repeat_days
     }
-    for x in context['selected_days']:
-        print(x, type(x))
     return render(request, 'edit.html', context)
 
 
 @login_required(login_url='/accounts/login')
 def complete_task(request, task_id):
-    task = Task.objects.get(id=task_id)
+    task = get_object_or_404(Task, id=task_id)
     task = parsers.complete_task(task, request.user)
     task.save()
     return redirect('/todolist')
@@ -229,7 +228,7 @@ def complete_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def trash_task(request, task_id):
-    task = Task.objects.get(id=task_id)
+    task = get_object_or_404(Task, id=task_id)
     task.status = 'T'
     task.save()
     return redirect('/todolist')
@@ -237,7 +236,7 @@ def trash_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def delete_task(request, task_id):
-    task = Task.objects.get(id=task_id)
+    task = get_object_or_404(Task, id=task_id)
     task.delete()
     return redirect('/todolist')
 
@@ -245,7 +244,7 @@ def delete_task(request, task_id):
 @login_required(login_url='/accounts/login')
 def delete_list(request, list_id):
     try:
-        list = TaskList.objects.get(id=list_id, created_user=request.user)
+        list = get_object_or_404(TaskList, id=list_id, created_user=request.user)
         list.delete()
     except Exception as e:
         messages.warning(request, 'Ti ne admin')
@@ -254,7 +253,7 @@ def delete_list(request, list_id):
 
 @login_required(login_url='/accounts/login')
 def repair_task(request, task_id):
-    task = Task.objects.get(id=task_id)
+    task = get_object_or_404(Task, id=task_id)
     for st in task.subtask_set.all():
         st.status = 'P'
     task.status = 'P'
@@ -334,7 +333,8 @@ def kick(request, list_id, user_id):
 
 @login_required(login_url='/accounts/login')
 def complete_subtask(request, subtask_id):
-    st = SubTask.objects.get(id=subtask_id)
+    # 404?
+    st = get_object_or_404(SubTask, id=subtask_id)
     st.status = 'C'
     st.save()
     task = st.task
@@ -345,14 +345,14 @@ def complete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def delete_subtask(request, subtask_id):
-    st = SubTask.objects.get(id=subtask_id)
+    st = get_object_or_404(SubTask, id=subtask_id)
     st.delete()
     return redirect('/todolist/details/' + str(st.task_id))
 
 
 @login_required(login_url='/accounts/login')
 def repair_subtask(request, subtask_id):
-    st = SubTask.objects.get(id=subtask_id)
+    st = get_object_or_404(SubTask, id=subtask_id)
     st.status = 'P'
     st.save()
     repair_task(request, st.task_id)
