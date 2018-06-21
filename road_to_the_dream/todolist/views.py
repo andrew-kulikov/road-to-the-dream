@@ -54,13 +54,13 @@ def details(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def list_details(request, list_id):
-    list = get_object_or_404(TaskList, id=list_id)
-    tasks = list.task_set.filter(Q(status='P') | Q(status='O'))
-    users = list.users.all()
+    task_list = get_object_or_404(TaskList, id=list_id, users__in=[request.user])
+    tasks = task_list.task_set.filter(Q(status='P') | Q(status='O'))
+    users = task_list.users.all()
     context = {
         'tasks': tasks,
         'users': users,
-        'list': list,
+        'list': task_list,
         'superuser': request.user.is_superuser
     }
     return render(request, 'list_details.html', context)
@@ -68,7 +68,7 @@ def list_details(request, list_id):
 
 @login_required(login_url='/accounts/login')
 def tag_details(request, tag_id):
-    tag = Tag.objects.get(id=tag_id)
+    tag = get_object_or_404(Tag, id=tag_id, users__in=[request.user])
     tasks = tag.task_set.all()
     context = {
         'tasks': tasks
@@ -79,18 +79,22 @@ def tag_details(request, tag_id):
 @login_required(login_url='/accounts/login')
 def add(request):
     if request.method == 'POST':
-        title = request.POST['title']
-        description = request.POST['description']
-        tags = request.POST.getlist('tags')
-        priority = int(request.POST['priority'])
-        list_id = int(request.POST['list_id'])
-        deadline = request.POST['deadline']
-        period = request.POST['period']
-        days = request.POST.getlist('days')
-        count = int(request.POST['count'])
-        dd = None
-        if deadline != '':
-            dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
+        try:
+            title = request.POST['title']
+            description = request.POST['description']
+            tags = request.POST.getlist('tags')
+            priority = int(request.POST['priority'])
+            list_id = int(request.POST['list_id'])
+            deadline = request.POST['deadline']
+            period = request.POST['period']
+            days = request.POST.getlist('days')
+            count = int(request.POST['count'])
+            dd = None
+            if deadline != '':
+                dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
+        except (KeyError, ValueError, AttributeError):
+            return HttpResponseBadRequest()
+
         user = request.user
         task = Task(
             title=title,
@@ -108,7 +112,10 @@ def add(request):
         task.save()
         task.tags.clear()
         for tag in tags:
-            task.tags.add(Tag.objects.get(id=int(tag)))
+            try:
+                task.tags.add(Tag.objects.get(id=int(tag)))
+            except (ValueError, Tag.DoesNotExist):
+                return HttpResponseBadRequest()
         task.save()
 
         return redirect('/todolist')
@@ -118,10 +125,11 @@ def add(request):
 @login_required(login_url='/accounts/login')
 def add_list(request):
     if request.method == 'POST':
-        name = request.POST['name']
-        is_private = False
-        if 'is_private' in request.POST:
-            is_private = True
+        try:
+            name = request.POST['name']
+        except KeyError:
+            return HttpResponseBadRequest()
+        is_private = 'is_private' in request.POST
         user = request.user
         tasklist = TaskList(name=name, is_private=is_private, created_user=user)
         tasklist.save()
@@ -134,7 +142,10 @@ def add_list(request):
 @login_required(login_url='/accounts/login')
 def add_tag(request):
     if request.method == 'POST':
-        name = request.POST['name']
+        try:
+            name = request.POST['name']
+        except KeyError:
+            return HttpResponseBadRequest()
         user = request.user
         tag = Tag(name=name)
         tag.save()
@@ -147,25 +158,27 @@ def add_tag(request):
 @login_required(login_url='/accounts/login')
 def edit_list(request, list_id):
     if request.method == 'POST':
-        name = request.POST['name']
+        try:
+            name = request.POST['name']
+        except KeyError:
+            return HttpResponseBadRequest()
         is_private = 'is_private' in request.POST
         user = request.user
-        try:
-            tasklist = get_object_or_404(TaskList, id=list_id, created_user=user)
-            tasklist.name = name
-            tasklist.is_private = is_private
-            tasklist.save()
-            if is_private:
-                tasklist.users.clear()
-                tasklist.users.add(user)
-                tasklist.save()
-        except Exception as e:
-            messages.warning(request, 'Ti ne admin')
+        task_list = get_object_or_404(TaskList, id=list_id, created_user=user)
+        task_list.name = name
+        task_list.is_private = is_private
+        task_list.save()
+        if is_private:
+            task_list.users.clear()
+            task_list.users.add(user)
+            task_list.save()
+
         return redirect('/todolist/lists/' + str(list_id))
-    tasklist = get_object_or_404(TaskList, id=list_id)
+
+    task_list = get_object_or_404(TaskList, id=list_id, creared_user=request.user)
     context = {
-        'name': tasklist.name,
-        'is_private': tasklist.is_private
+        'name': task_list.name,
+        'is_private': task_list.is_private
     }
     return render(request, 'add_tasklist.html', context)
 
@@ -190,7 +203,6 @@ def edit_task(request, task_id):
             return HttpResponseBadRequest()
         try:
             task = Task.objects.get(id=task_id, created_user=request.user)
-            print(task)
             task.title = title
             task.priority = priority
             task.description = description
@@ -248,11 +260,8 @@ def delete_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def delete_list(request, list_id):
-    try:
-        list = get_object_or_404(TaskList, id=list_id, created_user=request.user)
-        list.delete()
-    except Exception as e:
-        messages.warning(request, 'Ti ne admin')
+    task_list = get_object_or_404(TaskList, id=list_id, created_user=request.user)
+    task_list.delete()
     return redirect('/todolist')
 
 
@@ -268,7 +277,7 @@ def repair_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def completed(request):
-    tasks = Task.objects.filter(status='C')
+    tasks = Task.objects.filter(status='C', task_list__in=request.user.all_lists.all())
     context = {
         'tasks': tasks,
     }
@@ -308,22 +317,21 @@ def invite(request, list_id):
     if request.method == 'POST':
         try:
             user_id = request.POST['user_id']
-            tasklist = TaskList.objects.get(id=list_id, created_user=request.user)
-            invited_user = User.objects.get(id=int(user_id))
-            tasklist.users.add(invited_user)
-            tasklist.save()
-            list_tags = Tag.objects.filter(task_set__in=tasklist.task_set)
-            for tag in list_tags:
-                invited_user.tag_set.add(tag)
-            invited_user.save()
-        except KeyError as e:
+        except KeyError:
             return HttpResponseBadRequest()
-            # messages.error(request, 'ti ne admin')
-
+        task_list = get_object_or_404(TaskList, id=list_id, created_user=request.user)
+        invited_user = User.objects.get(id=int(user_id))
+        task_list.users.add(invited_user)
+        task_list.save()
+        list_tags = Tag.objects.filter(users__in=task_list.users.all())
+        for tag in list_tags:
+            invited_user.tag_set.add(tag)
+        invited_user.save()
         return redirect('/todolist/lists/' + str(list_id))
-    tasklist = get_object_or_404(TaskList, id=list_id)
+
+    task_list = get_object_or_404(TaskList, id=list_id)
     context = {
-        'users': User.objects.exclude(all_lists__in=[tasklist])
+        'users': User.objects.exclude(all_lists__in=[task_list])
     }
     return render(request, 'invite.html', context)
 
