@@ -52,10 +52,10 @@ class Task(models.Model):
         (7, 'Sunday'),
     )
     PERIODS = (
-        ('D', 'Daily'),
-        ('W', 'Weekly'),
-        ('M', 'Monthly'),
-        ('Y', 'Yearly'),
+        ('D', 'Day'),
+        ('W', 'Week'),
+        ('M', 'Month'),
+        ('Y', 'Year'),
         ('N', 'None')
     )
 
