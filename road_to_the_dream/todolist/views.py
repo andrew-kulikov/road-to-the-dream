@@ -220,7 +220,7 @@ def edit_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def complete_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
     task = parsers.complete_task(task, request.user)
     task.save()
     return redirect('/todolist')
@@ -228,7 +228,7 @@ def complete_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def trash_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id, created_user=request.user)
     task.status = 'T'
     task.save()
     return redirect('/todolist')
@@ -236,7 +236,7 @@ def trash_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def delete_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id, created_user=request.user)
     task.delete()
     return redirect('/todolist')
 
@@ -253,7 +253,7 @@ def delete_list(request, list_id):
 
 @login_required(login_url='/accounts/login')
 def repair_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id, created_user=request.user)
     for st in task.subtask_set.all():
         st.status = 'P'
     task.status = 'P'
@@ -263,7 +263,6 @@ def repair_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def completed(request):
-    user = request.user
     tasks = Task.objects.filter(status='C')
     context = {
         'tasks': tasks,
@@ -324,7 +323,7 @@ def invite(request, list_id):
 
 @login_required(login_url='/accounts/login')
 def kick(request, list_id, user_id):
-    tasklist = TaskList.objects.get(id=list_id, created_user=request.user)
+    tasklist = get_object_or_404(TaskList, id=list_id, created_user=request.user)
     kicked_user = User.objects.get(id=int(user_id))
     tasklist.users.remove(kicked_user)
     tasklist.save()
@@ -345,15 +344,19 @@ def complete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def delete_subtask(request, subtask_id):
-    st = get_object_or_404(SubTask, id=subtask_id)
+    print(request.user.all_lists.all())
+    st = get_object_or_404(SubTask, id=subtask_id, task__task_list__in=request.user.all_lists.all())
     st.delete()
     return redirect('/todolist/details/' + str(st.task_id))
 
 
 @login_required(login_url='/accounts/login')
 def repair_subtask(request, subtask_id):
-    st = get_object_or_404(SubTask, id=subtask_id)
+    st = get_object_or_404(SubTask, id=subtask_id, task__in=Task.objects.filter(task_list__in=request.user.all_lists.all()))
     st.status = 'P'
     st.save()
-    repair_task(request, st.task_id)
+    task = st.task
+    task.status = 'P'
+    task.completed_user = None
+    task.save()
     return redirect('/todolist/details/' + str(st.task_id))

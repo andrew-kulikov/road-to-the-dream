@@ -30,7 +30,7 @@
             <p>Days: &nbsp {{task.repeat_days }} </p>
             {% endif %}
             <p>Created user:&nbsp {{task.created_user}} </p>
-            {% if completed %}
+            {% if task.status == 'C' %}
             <p>Completed user:&nbsp {{task.completed_user}} </p>
             {% endif %}
             <p>Task list:&nbsp {{task.task_list}} </p>
