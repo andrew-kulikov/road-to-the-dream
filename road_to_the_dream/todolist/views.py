@@ -55,7 +55,7 @@ def details(request, task_id):
 @login_required(login_url='/accounts/login')
 def list_details(request, list_id):
     list = get_object_or_404(TaskList, id=list_id)
-    tasks = list.task_set.filter(status='P')
+    tasks = list.task_set.filter(Q(status='P') | Q(status='O'))
     users = list.users.all()
     context = {
         'tasks': tasks,
@@ -83,11 +83,11 @@ def add(request):
         description = request.POST['description']
         tags = request.POST.getlist('tags')
         priority = int(request.POST['priority'])
-        list_id = request.POST['list_id']
+        list_id = int(request.POST['list_id'])
         deadline = request.POST['deadline']
         period = request.POST['period']
         days = request.POST.getlist('days')
-        count = request.POST['count']
+        count = int(request.POST['count'])
         dd = None
         if deadline != '':
             dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
@@ -98,11 +98,11 @@ def add(request):
             created_user=user,
             priority=priority,
             deadline=dd,
-            task_list_id=int(list_id)
+            task_list_id=list_id
         )
         if dd:
             task.period_val = period
-            task.period_count = int(count)
+            task.period_count = count
             if period == 'W':
                 task.repeat_days = days
         task.save()
@@ -194,7 +194,6 @@ def edit_task(request, task_id):
             task.title = title
             task.priority = priority
             task.description = description
-            # ??
             task.task_list = TaskList.objects.get(id=list_id)
             task.deadline = dd
             task.save()
