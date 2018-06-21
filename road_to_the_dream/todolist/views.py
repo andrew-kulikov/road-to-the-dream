@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect
 from django.conf import settings
+from django.http import HttpResponseBadRequest
 
 from . import parsers
 from .models import Task, TaskList, Tag, SubTask
@@ -172,26 +173,29 @@ def edit_list(request, list_id):
 @login_required(login_url='/accounts/login')
 def edit_task(request, task_id):
     if request.method == 'POST':
-        title = request.POST['title']
-        description = request.POST['description']
-        tags = request.POST.getlist('tags')
-        priority = int(request.POST['priority'])
-        list_id = request.POST['list_id']
-        deadline = request.POST['deadline']
-        period = request.POST['period']
-        days = request.POST.getlist('days')
-        count = request.POST['count']
-        dd = None
-        if deadline != '':
-            # date pattern to config (locales?)
-            dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
         try:
-            task = get_object_or_404(Task, id=task_id, created_user=request.user)
+            title = request.POST['title']
+            description = request.POST['description']
+            tags = request.POST.getlist('tags')
+            priority = int(request.POST['priority'])
+            list_id = request.POST['list_id']
+            deadline = request.POST['deadline']
+            period = request.POST['period']
+            days = request.POST.getlist('days')
+            count = request.POST['count']
+            dd = None
+            if deadline != '':
+                dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
+        except (KeyError, ValueError, AttributeError):
+            return HttpResponseBadRequest()
+        try:
+            task = Task.objects.get(id=task_id, created_user=request.user)
+            print(task)
             task.title = title
             task.priority = priority
             task.description = description
             # ??
-            task.task_list = get_object_or_404(TaskList, id=list_id)
+            task.task_list = TaskList.objects.get(id=list_id)
             task.deadline = dd
             task.save()
             if dd:
@@ -204,11 +208,13 @@ def edit_task(request, task_id):
             for tag in tags:
                 task.tags.add(Tag.objects.get(id=int(tag)))
             task.save()
-        except Exception as e:
-            messages.error(request, 'ti ne admin')
+        except TaskList.DoesNotExist:
+            return HttpResponseBadRequest()
+        except Task.DoesNotExist:
+            messages.error(request, "You don't have permission to edit this task")
 
         return redirect('/todolist')
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
     context = {
         'task': task,
         'selected_tags': task.tags.all(),
@@ -301,8 +307,8 @@ def next_week(request):
 @login_required(login_url='/accounts/login')
 def invite(request, list_id):
     if request.method == 'POST':
-        user_id = request.POST['user_id']
         try:
+            user_id = request.POST['user_id']
             tasklist = TaskList.objects.get(id=list_id, created_user=request.user)
             invited_user = User.objects.get(id=int(user_id))
             tasklist.users.add(invited_user)
@@ -311,10 +317,12 @@ def invite(request, list_id):
             for tag in list_tags:
                 invited_user.tag_set.add(tag)
             invited_user.save()
-        except Exception as e:
-            messages.error(request, 'ti ne admin')
+        except KeyError as e:
+            return HttpResponseBadRequest()
+            # messages.error(request, 'ti ne admin')
+
         return redirect('/todolist/lists/' + str(list_id))
-    tasklist = TaskList.objects.get(id=list_id)
+    tasklist = get_object_or_404(TaskList, id=list_id)
     context = {
         'users': User.objects.exclude(all_lists__in=[tasklist])
     }
