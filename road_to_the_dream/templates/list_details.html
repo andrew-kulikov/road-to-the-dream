@@ -12,10 +12,12 @@
 <form>
     <div class="btn-group" role="group" aria-label="Basic example">
         {% if not list.is_private %}
-        <input type="button" class="btn btn-secondary" value="Invite" onclick="window.location.href='invite/'"/>
+        <a href="invite/" class="btn btn-link">Invite</a>
         {% endif %}
-        <input type="button" class="btn btn-secondary" value="Edit" onclick="window.location.href='edit/'"/>
-        <input type="button" class="btn btn-secondary" value="Delete" onclick="window.location.href='delete/'"/>
+        {% if superuser %}
+        <a href="edit/" class="btn btn-link">Edit</a>
+        <a href="delete/" class="btn btn-link">Delete</a>
+        {% endif %}
     </div>
 </form>
 <h5>Users:</h5>

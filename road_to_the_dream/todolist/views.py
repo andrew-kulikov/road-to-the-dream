@@ -61,7 +61,7 @@ def list_details(request, list_id):
         'tasks': tasks,
         'users': users,
         'list': task_list,
-        'superuser': request.user.is_superuser
+        'superuser': request.user == task_list.created_user
     }
     return render(request, 'list_details.html', context)
 
