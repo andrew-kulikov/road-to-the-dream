@@ -5,12 +5,16 @@
 {% endblock%}
 
 {% block content %}
-<div class="container">
+<div class="container" style="width: 100%;">
     <div class="row">
-        <div class="col col-sm-4">
+        <div class="col col-sm-6">
             <h1>{{task.title}}</h1>
 
+            {% if task.status != 'C' %}
             <a href="/todolist/complete/{{task.id}}/?next={{request_path}}" class="btn btn-link">Complete</a>
+            {% else %}
+            <a href="/todolist/repair/{{task.id}}/?next={{request_path}}" class="btn btn-link">Repair</a>
+            {% endif %}
             <a href="/todolist/edit/{{task.id}}/?next={{request_path}}" class="btn btn-link">Edit</a>
             <a href="/todolist/trash/{{task.id}}/?next={{request_path}}" class="btn btn-link">Trash</a>
 
