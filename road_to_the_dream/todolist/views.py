@@ -19,22 +19,21 @@ def index(request):
     if 'sort_type' in request.GET:
         sort_type = request.GET['sort_type']
     parsers.check_overdue()
-    tasks = Task.objects.filter(Q(created_user=request.user) & Q(status='P') | Q(status='O'))
+    tasks = Task.objects.filter(
+        (Q(created_user=request.user) & Q(task_list=None)) |
+        (Q(task_list__in=request.user.all_lists.all())) &
+        Q(status='P') | Q(status='O'))
     if sort_type:
         tasks = tasks.order_by(sort_type)
-    task_lists = TaskList.objects.filter(users__in=[request.user])
-    tags = Tag.objects.all()
     context = {
         'tasks': tasks,
-        'task_lists': task_lists,
-        'tags': tags
     }
     return render(request, 'index.html', context)
 
 
 @login_required(login_url='/accounts/login')
 def details(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
     if request.method == 'POST':
         if task.status == 'C':
             task.status = 'P'
@@ -195,7 +194,7 @@ def edit_task(request, task_id):
             deadline = request.POST['deadline']
             period = request.POST['period']
             days = request.POST.getlist('days')
-            count = request.POST['count']
+            count = int(request.POST['count'])
             dd = None
             if deadline != '':
                 dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
@@ -211,12 +210,13 @@ def edit_task(request, task_id):
             task.save()
             if dd:
                 task.period_val = period
-                task.period_count = int(count)
+                task.period_count = count
                 if period == 'W':
                     task.repeat_days = days
             task.save()
             task.tags.clear()
             for tag in tags:
+                #
                 task.tags.add(Tag.objects.get(id=int(tag)))
             task.save()
         except TaskList.DoesNotExist:
@@ -226,10 +226,14 @@ def edit_task(request, task_id):
 
         return redirect('/todolist')
     task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
+    try:
+        deadline = datetime.strftime(task.deadline, settings.DATETIME_PATTERN)
+    except (AttributeError, TypeError):
+        deadline = None
     context = {
         'task': task,
         'selected_tags': task.tags.all(),
-        'deadline': datetime.strftime(task.deadline, settings.DATETIME_PATTERN),
+        'deadline': deadline,
         'selected_days': task.repeat_days
     }
     return render(request, 'edit.html', context)
