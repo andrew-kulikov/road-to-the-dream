@@ -22,10 +22,10 @@
             <p>Created:&nbsp {{task.created}} </p>
             <p>Deadline: &nbsp {{task.deadline}} </p>
             {% if task.period_val != 'N' %}
-            <p>Repeat: &nbsp {{task.get_period_val_display }} </p>
+            <p>Repeat every: &nbsp {{task.period_count}} &nbsp {{task.get_period_val_display }}(s) </p>
             {% endif %}
             {% if task.period_val == 'W' %}
-            <p>Days: &nbsp {{task.repeat_days }} </p>
+            <p>At: &nbsp {{task.repeat_days }} </p>
             {% endif %}
             <p>Created user:&nbsp {{task.created_user}} </p>
             {% if task.status == 'C' %}
