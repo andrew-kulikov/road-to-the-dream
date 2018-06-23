@@ -11,12 +11,12 @@
             <h1>{{task.title}}</h1>
 
             {% if task.status != 'C' %}
-            <a href="/todolist/complete/{{task.id}}/?next={{request_path}}" class="btn btn-link">Complete</a>
+            <a href="{% url 'complete_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Complete</a>
             {% else %}
-            <a href="/todolist/repair/{{task.id}}/?next={{request_path}}" class="btn btn-link">Repair</a>
+            <a href="{% url 'repair_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Repair</a>
             {% endif %}
-            <a href="/todolist/edit/{{task.id}}/?next={{request_path}}" class="btn btn-link">Edit</a>
-            <a href="/todolist/trash/{{task.id}}/?next={{request_path}}" class="btn btn-link">Trash</a>
+            <a href="{% url 'edit_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Edit</a>
+            <a href="{% url 'trash_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Trash</a>
 
             <p>Description:&nbsp {{task.description}} </p>
             <p>Created:&nbsp {{task.created}} </p>
@@ -58,12 +58,8 @@
             <ul class="list-group">
                 {% for st in pending_st %}
                 <li>{{st.title}}
-                    <form action="/todolist/subtasks/{{st.id}}/complete/" class="task_form">
-                        <input type="submit" class="btn btn-link" value="Complete" />
-                    </form>
-                    <form action="/todolist/subtasks/{{st.id}}/delete/" class="task_form">
-                        <input type="submit" class="btn btn-link" value="Delete" />
-                    </form>
+                    <a href="{% url 'complete_subtask' subtask_id=st.id %}" class="btn btn-link">Complete</a>
+                    <a href="{% url 'delete_subtask' subtask_id=st.id %}" class="btn btn-link">Delete</a>
                 </li>
                 {% endfor %}
             </ul>
@@ -72,12 +68,8 @@
             <ul class="list-group">
                 {% for st in completed_st %}
                 <li>{{st.title}}
-                    <form action="/todolist/subtasks/{{st.id}}/repair/" class="task_form">
-                        <input type="submit" class="btn btn-link" value="Repair" />
-                    </form>
-                    <form action="/todolist/subtasks/{{st.id}}/delete/" class="task_form">
-                        <input type="submit" class="btn btn-link" value="Delete" />
-                    </form>
+                    <a href="{% url 'repair_subtask' subtask_id=st.id %}" class="btn btn-link">Repair</a>
+                    <a href="{% url 'delete_subtask' subtask_id=st.id %}" class="btn btn-link">Delete</a>
                 </li>
                 {% endfor %}
             </ul>

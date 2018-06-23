@@ -86,6 +86,7 @@ def add(request):
             description = request.POST['description']
             tags = request.POST.getlist('tags')
             priority = int(request.POST['priority'])
+            # if no list?
             list_id = int(request.POST['list_id'])
             deadline = request.POST['deadline']
             period = request.POST['period']
@@ -284,7 +285,7 @@ def repair_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def completed(request):
-    tasks = Task.objects.filter(status='C', task_list__in=request.user.all_lists.all())
+    tasks = Task.objects.filter(status='C', completed_user=request.user)
     context = {
         'tasks': tasks,
     }
@@ -371,6 +372,7 @@ def delete_subtask(request, subtask_id):
     st = get_object_or_404(SubTask, id=subtask_id, task__task_list__in=request.user.all_lists.all())
     st.delete()
     return redirect('/todolist/details/' + str(st.task_id))
+
 
 
 @login_required(login_url='/accounts/login')

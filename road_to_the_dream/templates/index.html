@@ -5,7 +5,7 @@
 {% endblock%}
 
 {% block content %}
-<form action="/todolist/add">
+<form action="{% url 'add' %}">
     <input type="submit" class="btn btn-link" value="Add task">
 </form>
 {% include 'task_list.html' %}

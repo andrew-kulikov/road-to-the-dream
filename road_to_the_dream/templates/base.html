@@ -49,22 +49,22 @@
             <ul class="list-unstyled components">
                 <!--p>Dummy Heading</p-->
                 <li class="active">
-                    <a href="/todolist/">All</a>
+                    <a href="{% url 'index' %}">All</a>
                 </li>
                 <li>
-                    <a href="/todolist/lists/today/">Today</a>
+                    <a href="{% url 'today' %}">Today</a>
                 </li>
                 <li>
-                    <a href="/todolist/lists/next-week/">Next week</a>
+                    <a href="{% url 'next_week' %}">Next week</a>
                 </li>
                 <li>
                     <a href="#listsSubmenu" data-toggle="collapse" aria-expanded="false">Lists</a>
                     <ul class="collapse list-unstyled" id="listsSubmenu">
                         {% for list in task_lists %}
-                        <li><a href="/todolist/lists/{{list.id}}">{{ list.name }}</a></li>
+                        <li><a href="{% url 'list_details' list_id=list.id %}">{{ list.name }}</a></li>
                         {% endfor %}
                         <li>
-                            <a href="/todolist/lists/add/?next={{request_path}}">
+                            <a href="{% url 'add_list' %}?next={{request_path}}">
                                 <i class="glyphicon glyphicon-plus  "></i>
                                 Add
                             </a>
@@ -75,10 +75,10 @@
                     <a href="#tagsSubmenu" data-toggle="collapse" aria-expanded="false">Tags</a>
                     <ul class="collapse list-unstyled" id="tagsSubmenu">
                         {% for tag in tags %}
-                        <li><a href="/todolist/tags/details/{{tag.id}}">{{ tag.name }}</a></li>
+                        <li><a href="{% url 'tag_details' tag_id=tag.id%}">{{ tag.name }}</a></li>
                         {% endfor %}
                         <li>
-                            <a href="/todolist/tags/add/?next={{request_path}}">
+                            <a href="{% url 'add_tag' %}?next={{request_path}}">
                                 <i class="glyphicon glyphicon-plus  "></i>
                                 Add
                             </a>
@@ -86,10 +86,10 @@
                     </ul>
                 </li>
                 <li>
-                    <a href="/todolist/lists/completed/">Completed</a>
+                    <a href="{% url 'completed' %}">Completed</a>
                 </li>
                 <li>
-                    <a href="/todolist/lists/trash/">Trash</a>
+                    <a href="{% url 'trash' %}">Trash</a>
                 </li>
             </ul>
 

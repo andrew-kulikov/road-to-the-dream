@@ -12,11 +12,11 @@
 <form>
     <div class="btn-group" role="group" aria-label="Basic example">
         {% if not list.is_private %}
-        <a href="invite/" class="btn btn-link">Invite</a>
+        <a href="{% url 'invite' list_id=list.id %}" class="btn btn-link">Invite</a>
         {% endif %}
         {% if superuser %}
-        <a href="edit/" class="btn btn-link">Edit</a>
-        <a href="delete/" class="btn btn-link">Delete</a>
+        <a href="{% url 'edit_list' list_id=list.id  %}" class="btn btn-link">Edit</a>
+        <a href="{% url 'delete_list' list_id=list.id  %}" class="btn btn-link">Delete</a>
         {% endif %}
     </div>
 </form>
@@ -26,7 +26,7 @@
     <li>
         {{ user }}
         {% if superuser and user != request.user %}
-        <form action="kick/{{user.id}}" class="task_form">
+        <form action="{% url 'kick_user' list_id=list.id  user_id=user.id %}" class="task_form">
             <input type="submit" class="btn btn-link" value="Kick" />
         </form>
         {% endif %}
@@ -34,7 +34,7 @@
     {% endfor %}
 </ul>
 <h5>Tasks:</h5>
-<form action="/todolist/add/">
+<form action="{% url 'add' %}">
     <input type="submit" class="btn btn-link" value="Add task">
 </form>
 {% include 'task_list.html' %}
