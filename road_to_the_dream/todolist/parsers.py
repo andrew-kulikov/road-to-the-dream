@@ -17,6 +17,13 @@ def check_overdue():
             task.save()
 
 
+def checkable(foo):
+    def wrapper(*args, **kwargs):
+        check_overdue()
+        return foo(*args, **kwargs)
+    return wrapper
+
+
 def complete_task(task, user):
     check_overdue()
     if task.period_val and task.period_val != 'N' and task.period_val != '':

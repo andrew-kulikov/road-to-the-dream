@@ -31,10 +31,10 @@ class TaskList(models.Model):
 
 class Task(models.Model):
     PRIORITIES = (
-        ('0', 'High'),
-        ('1', 'Medium'),
-        ('2', 'Low'),
-        ('-1', 'None')
+        (0, 'High'),
+        (1, 'Medium'),
+        (2, 'Low'),
+        (-1, 'None')
     )
     STATUS = (
         ('P', 'Pending'),

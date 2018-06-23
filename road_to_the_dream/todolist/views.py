@@ -13,12 +13,12 @@ from . import parsers
 from .models import Task, TaskList, Tag, SubTask
 
 
+@parsers.checkable
 @login_required(login_url='/accounts/login')
 def index(request):
     sort_type = None
     if 'sort_type' in request.GET:
         sort_type = request.GET['sort_type']
-    parsers.check_overdue()
     tasks = Task.objects.filter(
         (Q(created_user=request.user) & Q(task_list=None)) |
         (Q(task_list__in=request.user.all_lists.all())) &
@@ -31,6 +31,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+@parsers.checkable
 @login_required(login_url='/accounts/login')
 def details(request, task_id):
     task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
@@ -51,6 +52,7 @@ def details(request, task_id):
     return render(request, 'details.html', context)
 
 
+@parsers.checkable
 @login_required(login_url='/accounts/login')
 def list_details(request, list_id):
     task_list = get_object_or_404(TaskList, id=list_id, users__in=[request.user])
@@ -65,6 +67,7 @@ def list_details(request, list_id):
     return render(request, 'list_details.html', context)
 
 
+@parsers.checkable
 @login_required(login_url='/accounts/login')
 def tag_details(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id, users__in=[request.user])
@@ -298,6 +301,7 @@ def trash(request):
     return render(request, 'trash.html', context)
 
 
+@parsers.checkable
 @login_required(login_url='/accounts/login')
 def today(request):
     tasks = Task.objects.filter(status='P', deadline__lt=date.today() + timedelta(days=1))
@@ -307,6 +311,7 @@ def today(request):
     return render(request, 'today.html', context)
 
 
+@parsers.checkable
 @login_required(login_url='/accounts/login')
 def next_week(request):
     tasks = Task.objects.filter(status='P', deadline__lt=date.today() + relativedelta(weeks=+1))
@@ -363,7 +368,6 @@ def complete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def delete_subtask(request, subtask_id):
-    print(request.user.all_lists.all())
     st = get_object_or_404(SubTask, id=subtask_id, task__task_list__in=request.user.all_lists.all())
     st.delete()
     return redirect('/todolist/details/' + str(st.task_id))
@@ -371,7 +375,10 @@ def delete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def repair_subtask(request, subtask_id):
-    st = get_object_or_404(SubTask, id=subtask_id, task__in=Task.objects.filter(task_list__in=request.user.all_lists.all()))
+    st = get_object_or_404(
+        SubTask,
+        id=subtask_id,
+        task__in=Task.objects.filter(task_list__in=request.user.all_lists.all()))
     st.status = 'P'
     st.save()
     task = st.task
