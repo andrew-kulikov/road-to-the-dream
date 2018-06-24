@@ -364,7 +364,12 @@ def trash(request):
 @parsers.checkable
 @login_required(login_url='/accounts/login')
 def today(request):
-    tasks = Task.objects.filter(status='P', deadline__lt=date.today() + timedelta(days=1))
+    tasks = Task.objects.filter(
+        Q(status='P') &
+        Q(deadline__lt=date.today() + timedelta(days=1)) &
+        (Q(created_user=request.user) & Q(task_list=None) |
+         Q(task_list__in=request.user.all_lists.all()))
+    )
     context = {
         'tasks': tasks,
     }
