@@ -33,8 +33,6 @@ def index(request):
                 )
         )
     )
-    print(Task.objects.filter(task_list__in=request.user.all_lists.all()))
-    print(request.user.all_lists.all())
     if sort_type:
         tasks = tasks.order_by(sort_type)
 
@@ -103,7 +101,7 @@ def list_details(request, list_id):
 @login_required(login_url='/accounts/login')
 def tag_details(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id, users__in=[request.user])
-    tasks = tag.task_set.all()
+    tasks = tag.task_set.filter(task_list__in=request.user.all_lists.all()).all()
 
     page = request.GET.get('page', 1)
     paginator = Paginator(tasks, 8)
@@ -129,7 +127,7 @@ def add(request):
             tags = request.POST.getlist('tags')
             priority = int(request.POST['priority'])
             # if no list?
-            list_id = request.POST.get['list_id']
+            list_id = request.POST.get('list_id')
             deadline = request.POST['deadline']
             period = request.POST['period']
             days = request.POST.getlist('days')
@@ -141,13 +139,20 @@ def add(request):
             return HttpResponseBadRequest()
 
         user = request.user
+        if list_id:
+            try:
+                task_list = TaskList.objects.get(id=list_id)
+                list_id = int(list_id)
+            except (TaskList.DoesNotExist(), ValueError):
+                messages.ERROR('Task list does not exist, created simple task')
+                list_id = None
         task = Task(
             title=title,
             description=description,
             created_user=user,
             priority=priority,
             deadline=dd,
-            task_list_id=int(list_id)
+            task_list_id=list_id
         )
         if dd:
             task.period_val = period
