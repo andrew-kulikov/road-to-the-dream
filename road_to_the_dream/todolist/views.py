@@ -54,7 +54,13 @@ def index(request):
 @parsers.checkable
 @login_required(login_url='/accounts/login')
 def details(request, task_id):
-    task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
+    task = get_object_or_404(
+        Task,
+        Q(id=task_id) & (
+                Q(created_user=request.user) & Q(task_list=None) |
+                Q(task_list__in=request.user.all_lists.all())
+        )
+    )
     if request.method == 'POST':
         if task.status == 'C':
             task.status = 'P'
