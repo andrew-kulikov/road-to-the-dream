@@ -107,7 +107,10 @@ def list_details(request, list_id):
 @login_required(login_url='/accounts/login')
 def tag_details(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id, users__in=[request.user])
-    tasks = tag.task_set.filter(task_list__in=request.user.all_lists.all()).all()
+    tasks = tag.task_set.filter((
+                Q(created_user=request.user) & Q(task_list=None) |
+                Q(task_list__in=request.user.all_lists.all())
+        )).all()
 
     page = request.GET.get('page', 1)
     paginator = Paginator(tasks, 8)
@@ -132,7 +135,6 @@ def add(request):
             description = request.POST['description']
             tags = request.POST.getlist('tags')
             priority = int(request.POST['priority'])
-            # if no list?
             list_id = request.POST.get('list_id')
             deadline = request.POST['deadline']
             period = request.POST['period']
@@ -299,7 +301,10 @@ def edit_task(request, task_id):
 
 @login_required(login_url='/accounts/login')
 def complete_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
+    task = get_object_or_404(Task, Q(id=task_id) & (
+                Q(created_user=request.user) & Q(task_list=None) |
+                Q(task_list__in=request.user.all_lists.all())
+        ))
     task = parsers.complete_task(task, request.user)
     task.save()
     return redirect('/todolist')
@@ -329,7 +334,7 @@ def delete_list(request, list_id):
 
 @login_required(login_url='/accounts/login')
 def repair_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, created_user=request.user)
+    task = get_object_or_404(Task, id=task_id, completed_user=request.user)
     for st in task.subtask_set.all():
         st.status = 'P'
     task.status = 'P'

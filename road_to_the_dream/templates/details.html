@@ -15,8 +15,10 @@
             {% else %}
             <a href="{% url 'repair_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Repair</a>
             {% endif %}
+            {% if task.created_user == user %}
             <a href="{% url 'edit_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Edit</a>
             <a href="{% url 'trash_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Trash</a>
+            {% endif %}
 
             <p>Description:&nbsp {{task.description}} </p>
             <p>Created:&nbsp {{task.created}} </p>
