@@ -62,5 +62,14 @@ def complete_task(task, user):
     return task
 
 
-def validate_data(title, description, tags, priority, list_id, deadline, period, days, count):
-    pass
+def validate_data(priority, period, days, count):
+    if priority not in map(str, range(-1, 3)):
+        return False
+    if period not in ['D', 'W', 'M', 'Y', 'N']:
+        return False
+    for day in days:
+        if day < 1 or day > 7:
+            return False
+    if count < 1:
+        return False
+    return True

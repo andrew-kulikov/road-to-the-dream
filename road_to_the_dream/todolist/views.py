@@ -135,7 +135,7 @@ def add(request):
             title = request.POST['title']
             description = request.POST['description']
             tags = request.POST.getlist('tags')
-            priority = int(request.POST['priority'])
+            priority = request.POST['priority']
             list_id = request.POST.get('list_id')
             deadline = request.POST['deadline']
             period = request.POST['period']
@@ -144,7 +144,9 @@ def add(request):
             dd = None
             if deadline != '':
                 dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
-        except (KeyError, ValueError, AttributeError):
+            if not parsers.validate_data(priority, period, days, count):
+                raise ValueError
+        except (KeyError, ValueError, AttributeError, TypeError):
             return HttpResponseBadRequest()
 
         user = request.user
@@ -152,8 +154,8 @@ def add(request):
             try:
                 task_list = TaskList.objects.get(id=list_id)
                 list_id = int(list_id)
-            except (TaskList.DoesNotExist(), ValueError):
-                messages.ERROR('Task list does not exist, created simple task')
+            except (TaskList.DoesNotExist(), ValueError, TypeError):
+                messages.error(request, 'Task list does not exist, created simple task', extra_tags='alert-error')
                 list_id = None
         task = Task(
             title=title,
