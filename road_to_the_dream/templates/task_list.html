@@ -4,8 +4,10 @@
         <select class="form-control" name="sort_type" id="sort_type">
             <option value="deadline">Deadline</option>
             <option value="priority">Priority</option>
+            <option value="title">Title</option>
+            <option value="created">Creation Date</option>
         </select>
-        <input type="submit" class="btn btn-success">
+        <input type="submit" class="btn btn-success" style="margin-top: 5px ">
     </form>
     {% for task in tasks %}
     <li class="list-group-item">
