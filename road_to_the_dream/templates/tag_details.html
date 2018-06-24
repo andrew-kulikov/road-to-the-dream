@@ -5,5 +5,10 @@
 {% endblock%}
 
 {% block content %}
+<h2>{{tag.name}}</h2>
+<div class="btn-group" role="group" aria-label="Basic example">
+    <a href="{% url 'edit_tag' tag_id=tag.id  %}" class="btn btn-link">Edit</a>
+    <a href="{% url 'delete_tag' tag_id=tag.id  %}" class="btn btn-link">Delete</a>
+</div>
 {% include 'task_list.html' %}
 {% endblock %}

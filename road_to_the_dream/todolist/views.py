@@ -137,7 +137,8 @@ def tag_details(request, tag_id):
         tasks = paginator.page(paginator.num_pages)
 
     context = {
-        'tasks': tasks
+        'tasks': tasks,
+        'tag': tag
     }
     return render(request, 'tag_details.html', context)
 
@@ -494,8 +495,10 @@ def kick(request, list_id, user_id):
 
 @login_required(login_url='/accounts/login')
 def complete_subtask(request, subtask_id):
-    ###################
-    st = get_object_or_404(SubTask, id=subtask_id)
+    st = get_object_or_404(SubTask, Q(id=subtask_id) & (
+                Q(task__created_user=request.user) & Q(task__task_list=None) |
+                Q(task__task_list__in=request.user.all_lists.all())
+        ))
     st.status = 'C'
     st.save()
     task = st.task
@@ -535,4 +538,33 @@ def exit_list(request, list_id):
     task_list.users.remove(user)
     user.all_lists.remove(task_list)
     messages.info(request, 'Exited from list')
+    return redirect('/todolist/')
+
+
+@login_required(login_url='/accounts/login')
+def edit_tag(request, tag_id):
+    if request.method == 'POST':
+        try:
+            name = request.POST['name']
+        except KeyError:
+            return HttpResponseBadRequest()
+        user = request.user
+        tag = get_object_or_404(Tag, id=tag_id, users__in=[user])
+        tag.name = name
+        tag.save()
+        messages.info(request, 'Tag edited')
+        return redirect('/todolist/')
+
+    context = {
+        'tag': get_object_or_404(Tag, id=tag_id, users__in=[request.user])
+    }
+    return render(request, 'edit_tag.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def delete_tag(request, tag_id):
+    user = request.user
+    tag = get_object_or_404(Tag, id=tag_id, users__in=[user])
+    tag.delete()
+    messages.info(request, 'Tag deleted')
     return redirect('/todolist/')
