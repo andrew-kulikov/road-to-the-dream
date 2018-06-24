@@ -82,9 +82,16 @@ def details(request, task_id):
 @parsers.checkable
 @login_required(login_url='/accounts/login')
 def list_details(request, list_id):
+    sort_type = None
+    if 'sort_type' in request.GET:
+        sort_type = request.GET['sort_type']
+
     task_list = get_object_or_404(TaskList, id=list_id, users__in=[request.user])
     tasks = task_list.task_set.filter(Q(status='P') | Q(status='O'))
     users = task_list.users.all()
+
+    if sort_type:
+        tasks = tasks.order_by(sort_type)
 
     page = request.GET.get('page', 1)
     paginator = Paginator(tasks, 8)
@@ -107,11 +114,18 @@ def list_details(request, list_id):
 @parsers.checkable
 @login_required(login_url='/accounts/login')
 def tag_details(request, tag_id):
+    sort_type = None
+    if 'sort_type' in request.GET:
+        sort_type = request.GET['sort_type']
+
     tag = get_object_or_404(Tag, id=tag_id, users__in=[request.user])
     tasks = tag.task_set.filter((
                 Q(created_user=request.user) & Q(task_list=None) |
                 Q(task_list__in=request.user.all_lists.all())
         )).all()
+
+    if sort_type:
+        tasks = tasks.order_by(sort_type)
 
     page = request.GET.get('page', 1)
     paginator = Paginator(tasks, 8)
@@ -383,12 +397,29 @@ def trash(request):
 @parsers.checkable
 @login_required(login_url='/accounts/login')
 def today(request):
+    sort_type = None
+    if 'sort_type' in request.GET:
+        sort_type = request.GET['sort_type']
+
     tasks = Task.objects.filter(
         (Q(status='P') | Q(status='O')) &
         Q(deadline__range=[date.today(), date.today() + timedelta(days=1)]) &
         (Q(created_user=request.user) & Q(task_list=None) |
          Q(task_list__in=request.user.all_lists.all()))
     )
+
+    if sort_type:
+        tasks = tasks.order_by(sort_type)
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(tasks, 8)
+    try:
+        tasks = paginator.page(page)
+    except PageNotAnInteger:
+        tasks = paginator.page(1)
+    except EmptyPage:
+        tasks = paginator.page(paginator.num_pages)
+
     context = {
         'tasks': tasks,
     }
@@ -398,7 +429,24 @@ def today(request):
 @parsers.checkable
 @login_required(login_url='/accounts/login')
 def next_week(request):
+    sort_type = None
+    if 'sort_type' in request.GET:
+        sort_type = request.GET['sort_type']
+
     tasks = Task.objects.filter(status='P', deadline__lt=date.today() + relativedelta(weeks=+1))
+
+    if sort_type:
+        tasks = tasks.order_by(sort_type)
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(tasks, 8)
+    try:
+        tasks = paginator.page(page)
+    except PageNotAnInteger:
+        tasks = paginator.page(1)
+    except EmptyPage:
+        tasks = paginator.page(paginator.num_pages)
+
     context = {
         'tasks': tasks,
     }
