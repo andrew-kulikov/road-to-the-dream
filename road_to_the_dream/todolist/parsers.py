@@ -10,6 +10,8 @@ def check_overdue():
     tasks = Task.objects.filter(Q(status='O') | Q(status='P'))
     for task in tasks:
         if task.deadline:
+            if task.created_user.username == 'kek':
+                print(task.deadline, timezone.now(), task.deadline > timezone.now())
             if task.deadline > timezone.now():
                 task.status = 'P'
             else:
@@ -19,6 +21,7 @@ def check_overdue():
 
 def checkable(foo):
     def wrapper(*args, **kwargs):
+        print('hi')
         check_overdue()
         return foo(*args, **kwargs)
     return wrapper
@@ -57,3 +60,7 @@ def complete_task(task, user):
         task.completed_user = user
         task.status = 'C'
     return task
+
+
+def validate_data(title, description, tags, priority, list_id, deadline, period, days, count):
+    pass

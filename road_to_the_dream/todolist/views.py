@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from django.utils import timezone
 
 from dateutil.relativedelta import *
 from django.conf import settings
@@ -250,7 +251,7 @@ def edit_task(request, task_id):
             description = request.POST['description']
             tags = request.POST.getlist('tags')
             priority = int(request.POST['priority'])
-            list_id = request.POST.get['list_id']
+            list_id = request.POST.get('list_id')
             deadline = request.POST['deadline']
             period = request.POST['period']
             days = request.POST.getlist('days')
@@ -258,14 +259,18 @@ def edit_task(request, task_id):
             dd = None
             if deadline != '':
                 dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
-        except (KeyError, ValueError, AttributeError):
+        except (KeyError, ValueError, AttributeError, TypeError):
             return HttpResponseBadRequest()
         try:
             task = Task.objects.get(id=task_id, created_user=request.user)
             task.title = title
             task.priority = priority
             task.description = description
-            task.task_list = TaskList.objects.get(id=list_id)
+            if list_id:
+                try:
+                    task.task_list = TaskList.objects.get(id=int(list_id))
+                except (TaskList.DoesNotExist(), ValueError):
+                    messages.ERROR('Task list does not exist, created simple task')
             task.deadline = dd
             task.save()
             if dd:
@@ -276,8 +281,11 @@ def edit_task(request, task_id):
             task.save()
             task.tags.clear()
             for tag in tags:
-                #
-                task.tags.add(Tag.objects.get(id=int(tag)))
+                try:
+                    task.tags.add(Tag.objects.get(id=int(tag)))
+                except (Tag.DoesNotExist, ValueError, TypeError):
+                    messages.ERROR('Tag does not exist')
+                    return HttpResponseBadRequest()
             task.save()
         except TaskList.DoesNotExist:
             return HttpResponseBadRequest()
@@ -285,7 +293,9 @@ def edit_task(request, task_id):
             messages.error(request, "You don't have permission to edit this task")
 
         return redirect('/todolist')
-    task = get_object_or_404(Task, id=task_id, task_list__in=request.user.all_lists.all())
+    task = get_object_or_404(Task, Q(id=task_id) & (
+                Q(created_user=request.user) & Q(task_list=None) |
+                Q(task_list__in=request.user.all_lists.all())))
     try:
         deadline = datetime.strftime(task.deadline, settings.DATETIME_PATTERN)
     except (AttributeError, TypeError):
@@ -366,8 +376,7 @@ def trash(request):
 def today(request):
     tasks = Task.objects.filter(
         (Q(status='P') | Q(status='O')) &
-        Q(deadline__lt=date.today() + timedelta(days=1)) &
-        Q(deadline__gt=date.today()) &
+        Q(deadline__range=[date.today(), date.today() + timedelta(days=1)]) &
         (Q(created_user=request.user) & Q(task_list=None) |
          Q(task_list__in=request.user.all_lists.all()))
     )
