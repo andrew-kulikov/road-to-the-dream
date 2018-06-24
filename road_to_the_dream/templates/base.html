@@ -28,7 +28,7 @@
     {% endblock %}
 </head>
 <body>
-<div class="wrapper">
+<div class="wrapper" style="width: 100%">
     <!-- Sidebar Holder -->
     <nav id="sidebar">
         <div class="sidebar-header">
@@ -100,7 +100,7 @@
     </nav>
 
     <!-- Page Content Holder -->
-    <div id="content">
+    <div id="content" style="width: 50vw">
         {% for message in messages %}
         <div class="alert {{ message.tags }} alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">

@@ -176,7 +176,7 @@ def add(request):
             except (ValueError, Tag.DoesNotExist):
                 return HttpResponseBadRequest()
         task.save()
-
+        messages.info(request, 'Task added', extra_tags='alert-success')
         return redirect('/todolist')
     form = TaskForm()
     return render(request, 'add.html', {'form': form})
@@ -317,6 +317,7 @@ def complete_task(request, task_id):
         ))
     task = parsers.complete_task(task, request.user)
     task.save()
+    messages.info(request, 'Task completed')
     return redirect('/todolist')
 
 
@@ -325,6 +326,7 @@ def trash_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, created_user=request.user)
     task.status = 'T'
     task.save()
+    messages.info(request, 'Task trashed')
     return redirect('/todolist')
 
 
@@ -332,6 +334,7 @@ def trash_task(request, task_id):
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, created_user=request.user)
     task.delete()
+    messages.info(request, 'Task deleted')
     return redirect('/todolist')
 
 
@@ -339,6 +342,7 @@ def delete_task(request, task_id):
 def delete_list(request, list_id):
     task_list = get_object_or_404(TaskList, id=list_id, created_user=request.user)
     task_list.delete()
+    messages.info(request, 'List deleted')
     return redirect('/todolist')
 
 
@@ -349,6 +353,7 @@ def repair_task(request, task_id):
         st.status = 'P'
     task.status = 'P'
     task.save()
+    messages.info(request, 'Task repaired')
     return redirect('/todolist')
 
 
@@ -411,6 +416,7 @@ def invite(request, list_id):
         for tag in list_tags:
             invited_user.tag_set.add(tag)
         invited_user.save()
+        messages.info(request, 'User invited')
         return redirect('/todolist/lists/' + str(list_id))
 
     task_list = get_object_or_404(TaskList, id=list_id)
@@ -426,12 +432,13 @@ def kick(request, list_id, user_id):
     kicked_user = User.objects.get(id=int(user_id))
     tasklist.users.remove(kicked_user)
     tasklist.save()
+    messages.info(request, 'User kicked')
     return redirect('/todolist/lists/' + str(list_id))
 
 
 @login_required(login_url='/accounts/login')
 def complete_subtask(request, subtask_id):
-    # 404?
+    ###################
     st = get_object_or_404(SubTask, id=subtask_id)
     st.status = 'C'
     st.save()
@@ -443,6 +450,7 @@ def complete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def delete_subtask(request, subtask_id):
+    ################
     st = get_object_or_404(SubTask, id=subtask_id, task__task_list__in=request.user.all_lists.all())
     st.delete()
     return redirect('/todolist/details/' + str(st.task_id))
@@ -450,6 +458,7 @@ def delete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def repair_subtask(request, subtask_id):
+    #######
     st = get_object_or_404(
         SubTask,
         id=subtask_id,
@@ -469,4 +478,5 @@ def exit_list(request, list_id):
     task_list = get_object_or_404(TaskList, id=list_id)
     task_list.users.remove(user)
     user.all_lists.remove(task_list)
+    messages.info(request, 'Exited from list')
     return redirect('/todolist/')
