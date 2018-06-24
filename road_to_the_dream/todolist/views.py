@@ -252,7 +252,7 @@ def edit_list(request, list_id):
 
         return redirect('/todolist/lists/' + str(list_id))
 
-    task_list = get_object_or_404(TaskList, id=list_id, creared_user=request.user)
+    task_list = get_object_or_404(TaskList, id=list_id, created_user=request.user)
     context = {
         'name': task_list.name,
         'is_private': task_list.is_private
