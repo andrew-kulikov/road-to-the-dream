@@ -509,19 +509,22 @@ def complete_subtask(request, subtask_id):
 
 @login_required(login_url='/accounts/login')
 def delete_subtask(request, subtask_id):
-    ################
-    st = get_object_or_404(SubTask, id=subtask_id, task__task_list__in=request.user.all_lists.all())
+    st = get_object_or_404(SubTask, Q(id=subtask_id) & (
+                Q(task__created_user=request.user) & Q(task__task_list=None) |
+                Q(task__task_list__in=request.user.all_lists.all())
+        ))
     st.delete()
     return redirect('/todolist/details/' + str(st.task_id))
 
 
 @login_required(login_url='/accounts/login')
 def repair_subtask(request, subtask_id):
-    #######
     st = get_object_or_404(
         SubTask,
-        id=subtask_id,
-        task__in=Task.objects.filter(task_list__in=request.user.all_lists.all()))
+        Q(id=subtask_id) & (
+                Q(task__created_user=request.user) & Q(task__task_list=None) |
+                Q(task__task_list__in=request.user.all_lists.all())
+        ))
     st.status = 'P'
     st.save()
     task = st.task
