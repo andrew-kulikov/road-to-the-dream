@@ -5,23 +5,18 @@
 {% endblock%}
 
 {% block content %}
-{% for message in messages %}
-<p>{{message}}</p>
-{% endfor %}
 <h2>{{list.name}}</h2>
-<form>
-    <div class="btn-group" role="group" aria-label="Basic example">
-        {% if not list.is_private %}
-        <a href="{% url 'invite' list_id=list.id %}" class="btn btn-link">Invite</a>
-        {% endif %}
-        {% if superuser %}
-        <a href="{% url 'edit_list' list_id=list.id  %}" class="btn btn-link">Edit</a>
-        <a href="{% url 'delete_list' list_id=list.id  %}" class="btn btn-link">Delete</a>
-        {% else %}
-        <a href="{% url 'exit_list' list_id=list.id %}" class="btn btn-link">Exit</a>
-        {% endif %}
-    </div>
-</form>
+<div class="btn-group" role="group" aria-label="Basic example">
+    {% if not list.is_private %}
+    <a href="{% url 'invite' list_id=list.id %}" class="btn btn-link">Invite</a>
+    {% endif %}
+    {% if superuser %}
+    <a href="{% url 'edit_list' list_id=list.id  %}" class="btn btn-link">Edit</a>
+    <a href="{% url 'delete_list' list_id=list.id  %}" class="btn btn-link">Delete</a>
+    {% else %}
+    <a href="{% url 'exit_list' list_id=list.id %}" class="btn btn-link">Exit</a>
+    {% endif %}
+</div>
 <h5>Users:</h5>
 <ul>
     {% for user in users %}
