@@ -365,8 +365,9 @@ def trash(request):
 @login_required(login_url='/accounts/login')
 def today(request):
     tasks = Task.objects.filter(
-        Q(status='P') &
+        (Q(status='P') | Q(status='O')) &
         Q(deadline__lt=date.today() + timedelta(days=1)) &
+        Q(deadline__gt=date.today()) &
         (Q(created_user=request.user) & Q(task_list=None) |
          Q(task_list__in=request.user.all_lists.all()))
     )
