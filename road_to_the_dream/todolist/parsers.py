@@ -68,6 +68,10 @@ def validate_data(priority, period, days, count):
     if period not in ['D', 'W', 'M', 'Y', 'N']:
         return False
     for day in days:
+        try:
+            day = int(day)
+        except (ValueError, TypeError):
+            return False
         if day < 1 or day > 7:
             return False
     if count < 1:

@@ -266,7 +266,7 @@ def edit_task(request, task_id):
             title = request.POST['title']
             description = request.POST['description']
             tags = request.POST.getlist('tags')
-            priority = int(request.POST['priority'])
+            priority = request.POST['priority']
             list_id = request.POST.get('list_id')
             deadline = request.POST['deadline']
             period = request.POST['period']
