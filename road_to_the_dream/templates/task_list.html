@@ -18,8 +18,10 @@
         {% if task.deadline %} - {{task.deadline}} {% endif %}
         <div class="btn-group" role="group" aria-label="Basic example" style="float: right;">
             <a href="{% url 'complete_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Complete</a>
+            {% if task.created_user == user %}
             <a href="{% url 'edit_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Edit</a>
             <a href="{% url 'trash_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Trash</a>
+            {% endif %}
         </div>
     </li>
     {% endfor %}
