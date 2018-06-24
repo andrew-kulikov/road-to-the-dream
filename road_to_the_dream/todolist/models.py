@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from multiselectfield import MultiSelectField
+from django.utils import timezone
 
 
 class Tag(models.Model):
@@ -31,10 +32,10 @@ class TaskList(models.Model):
 
 class Task(models.Model):
     PRIORITIES = (
-        (0, 'High'),
-        (1, 'Medium'),
-        (2, 'Low'),
-        (-1, 'None')
+        ('0', 'High'),
+        ('1', 'Medium'),
+        ('2', 'Low'),
+        ('-1', 'None')
     )
     STATUS = (
         ('P', 'Pending'),
@@ -61,7 +62,7 @@ class Task(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    created = models.DateTimeField(default=datetime.now(), blank=True)
+    created = models.DateTimeField(blank=True)
     deadline = models.DateTimeField(default=None, blank=True, null=True)
     created_user = models.ForeignKey(
         User,
@@ -87,6 +88,11 @@ class Task(models.Model):
 
     class Meta:
         ordering = ('deadline',)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created = timezone.now()
+        return super(Task, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.title

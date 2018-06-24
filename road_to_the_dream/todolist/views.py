@@ -8,9 +8,11 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from . import parsers
 from .models import Task, TaskList, Tag, SubTask
+from .custom_forms import TaskForm
 
 
 @parsers.checkable
@@ -25,6 +27,16 @@ def index(request):
         Q(status='P') | Q(status='O'))
     if sort_type:
         tasks = tasks.order_by(sort_type)
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(tasks, 8)
+    try:
+        tasks = paginator.page(page)
+    except PageNotAnInteger:
+        tasks = paginator.page(1)
+    except EmptyPage:
+        tasks = paginator.page(paginator.num_pages)
+
     context = {
         'tasks': tasks,
     }
@@ -58,6 +70,16 @@ def list_details(request, list_id):
     task_list = get_object_or_404(TaskList, id=list_id, users__in=[request.user])
     tasks = task_list.task_set.filter(Q(status='P') | Q(status='O'))
     users = task_list.users.all()
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(tasks, 8)
+    try:
+        tasks = paginator.page(page)
+    except PageNotAnInteger:
+        tasks = paginator.page(1)
+    except EmptyPage:
+        tasks = paginator.page(paginator.num_pages)
+
     context = {
         'tasks': tasks,
         'users': users,
@@ -72,6 +94,16 @@ def list_details(request, list_id):
 def tag_details(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id, users__in=[request.user])
     tasks = tag.task_set.all()
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(tasks, 8)
+    try:
+        tasks = paginator.page(page)
+    except PageNotAnInteger:
+        tasks = paginator.page(1)
+    except EmptyPage:
+        tasks = paginator.page(paginator.num_pages)
+
     context = {
         'tasks': tasks
     }
@@ -122,7 +154,8 @@ def add(request):
         task.save()
 
         return redirect('/todolist')
-    return render(request, 'add.html')
+    form = TaskForm()
+    return render(request, 'add.html', {'form': form})
 
 
 @login_required(login_url='/accounts/login')

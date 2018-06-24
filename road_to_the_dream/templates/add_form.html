@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Add task </title>
+{% endblock%}
+
+{% block content %}
+<form action="{% url 'add' %}" method="post" style="width: 50vw">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+        <label class="my_class" for="{{ field.name }}">{{ field.label }}</label>
+        {% if field.name == 'deadline' %}
+        <div class='input-group date' id='deadline'>
+            <input type='text' class="form-control" name="deadline" />
+            <span class="input-group-addon">
+                <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+        </div>
+        {% else %}
+        {{ field }}
+        {% endif %}
+    </div>
+    {% endfor %}
+    <input type="submit" class="btn btn-light" value="submit">
+</form>
+<script type="text/javascript">
+    $(function () {
+        $('#deadline').datetimepicker();
+    });
+</script>
+{% endblock%}
