@@ -366,7 +366,11 @@ def delete_list(request, list_id):
 
 @login_required(login_url='/accounts/login')
 def repair_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, completed_user=request.user)
+    task = get_object_or_404(
+        Task,
+        Q(id=task_id) &
+        (Q(completed_user=request.user) | Q(created_user=request.user))
+    )
     for st in task.subtask_set.all():
         st.status = 'P'
     task.status = 'P'
