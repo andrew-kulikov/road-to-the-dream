@@ -261,6 +261,8 @@ def edit_task(request, task_id):
             dd = None
             if deadline != '':
                 dd = datetime.strptime(deadline, settings.DATETIME_PATTERN)
+            if not parsers.validate_data(priority, period, days, count):
+                raise ValueError
         except (KeyError, ValueError, AttributeError, TypeError):
             return HttpResponseBadRequest()
         try:
