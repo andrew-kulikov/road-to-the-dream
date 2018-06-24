@@ -17,6 +17,8 @@
         {% if superuser %}
         <a href="{% url 'edit_list' list_id=list.id  %}" class="btn btn-link">Edit</a>
         <a href="{% url 'delete_list' list_id=list.id  %}" class="btn btn-link">Delete</a>
+        {% else %}
+        <a href="{% url 'exit_list' list_id=list.id %}" class="btn btn-link">Exit</a>
         {% endif %}
     </div>
 </form>

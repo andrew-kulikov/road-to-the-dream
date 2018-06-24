@@ -22,9 +22,19 @@ def index(request):
     if 'sort_type' in request.GET:
         sort_type = request.GET['sort_type']
     tasks = Task.objects.filter(
-        (Q(created_user=request.user) & Q(task_list=None)) |
-        (Q(task_list__in=request.user.all_lists.all())) &
-        Q(status='P') | Q(status='O'))
+        (
+                (
+                        Q(created_user=request.user) & Q(task_list=None) |
+                        Q(task_list__in=request.user.all_lists.all())
+                )
+                &
+                (
+                        Q(status='P') | Q(status='O')
+                )
+        )
+    )
+    print(Task.objects.filter(task_list__in=request.user.all_lists.all()))
+    print(request.user.all_lists.all())
     if sort_type:
         tasks = tasks.order_by(sort_type)
 
@@ -119,7 +129,7 @@ def add(request):
             tags = request.POST.getlist('tags')
             priority = int(request.POST['priority'])
             # if no list?
-            list_id = int(request.POST['list_id'])
+            list_id = request.POST.get['list_id']
             deadline = request.POST['deadline']
             period = request.POST['period']
             days = request.POST.getlist('days')
@@ -137,7 +147,7 @@ def add(request):
             created_user=user,
             priority=priority,
             deadline=dd,
-            task_list_id=list_id
+            task_list_id=int(list_id)
         )
         if dd:
             task.period_val = period
@@ -227,7 +237,7 @@ def edit_task(request, task_id):
             description = request.POST['description']
             tags = request.POST.getlist('tags')
             priority = int(request.POST['priority'])
-            list_id = request.POST['list_id']
+            list_id = request.POST.get['list_id']
             deadline = request.POST['deadline']
             period = request.POST['period']
             days = request.POST.getlist('days')
@@ -407,7 +417,6 @@ def delete_subtask(request, subtask_id):
     return redirect('/todolist/details/' + str(st.task_id))
 
 
-
 @login_required(login_url='/accounts/login')
 def repair_subtask(request, subtask_id):
     st = get_object_or_404(
@@ -421,3 +430,12 @@ def repair_subtask(request, subtask_id):
     task.completed_user = None
     task.save()
     return redirect('/todolist/details/' + str(st.task_id))
+
+
+@login_required(login_url='/accounts/login')
+def exit_list(request, list_id):
+    user = request.user
+    task_list = get_object_or_404(TaskList, id=list_id)
+    task_list.users.remove(user)
+    user.all_lists.remove(task_list)
+    return redirect('/todolist/')

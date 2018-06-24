@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^lists/(?P<list_id>\d{0,50})/edit/$', views.edit_list, name='edit_list'),
     url(r'^lists/(?P<list_id>\d{0,50})/delete/$', views.delete_list, name='delete_list'),
     url(r'^lists/(?P<list_id>\d{0,50})/invite/$', views.invite, name='invite'),
+    url(r'^lists/(?P<list_id>\d{0,50})/exit/$', views.exit_list, name='exit_list'),
     url(r'^lists/(?P<list_id>\d{0,50})/kick/(?P<user_id>\d{0,50})/$', views.kick, name='kick_user'),
     url(r'^tags/add/$', views.add_tag, name='add_tag'),
     url(r'^tags/details/(?P<tag_id>\d{0,50})/$', views.tag_details, name='tag_details'),
