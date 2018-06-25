@@ -68,7 +68,10 @@ def details(request, task_id):
             task.save()
             parsers.check_overdue()
 
-        title = request.POST['subtask_name']
+        try:
+            title = request.POST['subtask_name']
+        except KeyError:
+            return HttpResponseBadRequest()
         st = SubTask(title=title, task=task)
         st.save()
     context = {
@@ -313,8 +316,7 @@ def edit_task(request, task_id):
 
         return redirect('/todolist')
     task = get_object_or_404(Task, Q(id=task_id) & (
-                Q(created_user=request.user) & Q(task_list=None) |
-                Q(task_list__in=request.user.all_lists.all())))
+                Q(created_user=request.user)))
     try:
         deadline = datetime.strftime(task.deadline, settings.DATETIME_PATTERN)
     except (AttributeError, TypeError):

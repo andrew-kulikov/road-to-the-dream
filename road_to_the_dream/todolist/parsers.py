@@ -7,21 +7,13 @@ from django.utils import timezone
 
 
 def check_overdue():
-    tasks = Task.objects.filter(Q(status='O') | Q(status='P'))
-    for task in tasks:
-        if task.deadline:
-            if task.created_user.username == 'kek':
-                print(task.deadline, timezone.now(), task.deadline > timezone.now())
-            if task.deadline > timezone.now():
-                task.status = 'P'
-            else:
-                task.status = 'O'
-            task.save()
+    now = timezone.now()
+    Task.objects.filter(deadline__gt=now, status='O').update(status='P')
+    Task.objects.filter(deadline__lte=now, status='P').update(status='O')
 
 
 def checkable(foo):
     def wrapper(*args, **kwargs):
-        print('hi')
         check_overdue()
         return foo(*args, **kwargs)
     return wrapper
