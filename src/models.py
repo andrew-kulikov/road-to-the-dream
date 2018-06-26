@@ -43,10 +43,21 @@ class Task:
 
 class TaskList:
     def __init__(self, name=None, is_private=True, users=None, created_user=None):
+        self.__id = None
         self.name = name
         self.is_private = is_private
         self.users = users
         self.created_user = created_user
+
+    @property
+    def id(self):
+        return self.__id
+
+    @id.setter
+    def id(self, val):
+        if not isinstance(val, int):
+            raise ValueError
+        self.__id = val
 
     def __str__(self):
         return self.name

@@ -45,3 +45,6 @@ class Controller:
     def get_task_list_tasks(self):
         pass
 
+    def change_connector(self):
+        pass
+
