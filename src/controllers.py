@@ -1,4 +1,5 @@
 from .models import Task, TaskList
+from .db_connectors import BasicConnector, DjangoConnector
 
 
 class Controller:
