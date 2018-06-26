@@ -39,3 +39,9 @@ class Controller:
     def invite_user(self):
         pass
 
+    def get_user_task_lists(self):
+        pass
+
+    def get_task_list_tasks(self):
+        pass
+
