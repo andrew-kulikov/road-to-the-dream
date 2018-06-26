@@ -52,7 +52,7 @@ class BasicConnector:
             f.write(jsonpickle.encode(task_list))
 
     def get_task_list(self, task_list_id):
-        tasks = []
+        task_lists = []
         good_task_list = None
         with open(self.task_lists_file, 'r+') as f:
             for line in f:
@@ -60,9 +60,9 @@ class BasicConnector:
                 if task_list.id == task_list_id:
                     good_task_list = task_list
                 else:
-                    tasks.append(task_list)
+                    task_lists.append(task_list)
 
-        self.save_tasks(tasks)
+        self.save_task_lists(task_lists)
 
         if not good_task_list:
             raise KeyError('Task list with id #{id} does not exist'.format(id=task_list_id))
@@ -93,3 +93,17 @@ class BasicConnector:
                     break
                 next_id += 1
         return next_id
+
+    def get_user_task_lists(self, user_id):
+        user_lists = []
+        other_lists = []
+        with open(self.task_lists_file, 'r+') as f:
+            for line in f:
+                task_list = jsonpickle.decode(line)
+                if not task_list.users or user_id not in task_list.users:
+                    other_lists.append(task_list)
+                    continue
+                user_lists.append(task_list)
+
+        self.save_tasks(other_lists)
+        return user_lists
