@@ -93,27 +93,3 @@ class BasicConnector:
                     break
                 next_id += 1
         return next_id
-
-
-class DjangoConnector:
-
-    def __init__(self):
-        pass
-
-    def save_task(self):
-        pass
-
-    def get_task(self):
-        pass
-
-    def save_task_list(self):
-        pass
-
-    def get_task_list(self):
-        pass
-
-    def get_next_task_id(self):
-        pass
-
-    def get_next_task_list_id(self):
-        pass
