@@ -36,7 +36,7 @@ class BasicConnector:
         self.save_tasks(tasks)
 
         if not good_task:
-            raise KeyError('Task with given key does not exist')
+            raise KeyError('Task with id #{id} does not exist'.format(id=task_id))
 
         return good_task
 
@@ -65,7 +65,7 @@ class BasicConnector:
         self.save_tasks(tasks)
 
         if not good_task_list:
-            raise KeyError('Task with given key does not exist')
+            raise KeyError('Task list with id #{id} does not exist'.format(id=task_list_id))
 
         return good_task_list
 
