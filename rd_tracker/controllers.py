@@ -30,8 +30,8 @@ Public methods
     'get_all_users': get all users that at least once created or completed task.
 """
 
-from src.models import Task, TaskList
-from src.db_connectors import BasicConnector
+from rd_tracker.models import Task, TaskList
+from rd_tracker.db_connectors import BasicConnector
 
 
 class Controller:

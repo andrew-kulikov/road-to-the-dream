@@ -1,6 +1,6 @@
 import argparse
-from src import Task, TaskList, Controller, BasicConnector
-from src.tools import parsers
+from rd_tracker import Task, TaskList, Controller, BasicConnector
+from rd_tracker.tools import parsers
 
 
 def login(args):

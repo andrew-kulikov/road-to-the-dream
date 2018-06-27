@@ -1,5 +1,5 @@
 import argparse
-from src import Task, TaskList, Controller, BasicConnector
+from rd_tracker import Task, TaskList, Controller, BasicConnector
 
 
 def login(args):

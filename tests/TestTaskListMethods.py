@@ -1,5 +1,5 @@
 import unittest
-from src import TaskList, Task
+from rd_tracker import TaskList, Task
 
 
 class TestTaskListMethods(unittest.TestCase):

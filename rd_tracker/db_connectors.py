@@ -1,4 +1,4 @@
-from src.models import TaskList, Task
+from rd_tracker.models import TaskList, Task
 import jsonpickle
 import os
 
