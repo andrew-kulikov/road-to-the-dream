@@ -216,7 +216,10 @@ def parse_args():
     who_parser = user_subparsers.add_parser('whoami', help='Display logged user')
     who_parser.set_defaults(func=print_user)
 
-    add_parser = subparsers.add_parser('add', help='Add task to your task list')
+    tasks_parser = subparsers.add_parser('tasks', help='Work with tasks')
+    task_subparsers = tasks_parser.add_subparsers(help='sub-command help')
+
+    add_parser = task_subparsers.add_parser('add', help='Add task to your task list')
     add_parser.add_argument('-n', '--name', help='Task name', default='Simple task', required=True)
     add_parser.add_argument('-d', '--description', help='Task description', default='', required=False)
     add_parser.add_argument('-t', '--tags', help='Task tags', nargs='+', required=False)
@@ -227,7 +230,7 @@ def parse_args():
                             help='Period of repeating in format d - day; w - week; m - month; y - year', default=None)
     add_parser.set_defaults(func=add_task)
 
-    edit_parser = subparsers.add_parser('edit', help='Edit task with selected id')
+    edit_parser = task_subparsers.add_parser('edit', help='Edit task with selected id')
     edit_parser.add_argument('-i', '--id', help='Task id', default=0)
     edit_parser.add_argument('-n', '--name', help='New task name', default=None)
     edit_parser.add_argument('-d', '--description', help='New task description', default=None)
@@ -240,34 +243,34 @@ def parse_args():
                              help='New period of repeating in format d - day; w - week; m - month; y - year')
     edit_parser.set_defaults(func=edit_task)
 
-    complete_parser = subparsers.add_parser('complete', help='Complete task #ID')
+    complete_parser = task_subparsers.add_parser('complete', help='Complete task #ID')
     complete_parser.add_argument('id', help='Id of completed task')
     complete_parser.set_defaults(func=complete_task)
 
-    remove_parser = subparsers.add_parser('remove', help='Remove task #ID')
+    remove_parser = task_subparsers.add_parser('remove', help='Remove task #ID')
     remove_parser.add_argument('id', help='Id of task to remove')
     remove_parser.set_defaults(func=remove_task)
 
-    move_parser = subparsers.add_parser('move', help='Move task #source to sub tasks of task #destination')
+    move_parser = task_subparsers.add_parser('move', help='Move task #source to sub tasks of task #destination')
     move_parser.add_argument('-s', '--source', help='Id of parent task', required=True)
     move_parser.add_argument('-d', '--destination', help='Id of task you want to move', required=True)
     move_parser.set_defaults(func=move_task)
 
-    task_list_parser = subparsers.add_parser('list', help='Print all your tasks')
+    task_list_parser = task_subparsers.add_parser('list', help='Print all your tasks')
     print_group = task_list_parser.add_mutually_exclusive_group()
     print_group.add_argument('-p', '--pending', action='store_true', help='Print all pending tasks')
     print_group.add_argument('-c', '--completed', action='store_true', help='Print all completed tasks')
     print_group.add_argument('-f', '--failed', action='store_true', help='Print all failed tasks')
     task_list_parser.set_defaults(func=print_tasks)
 
-    task_sort_parser = subparsers.add_parser('sort', help='Sort tasks in specific order')
+    task_sort_parser = task_subparsers.add_parser('sort', help='Sort tasks in specific order')
     sort_group = task_sort_parser.add_mutually_exclusive_group()
     sort_group.add_argument('-t', '--title', action='store_true', help='Sort tasks by name')
     sort_group.add_argument('-d', '--deadline', action='store_true', help='Sort tasks by deadline')
     sort_group.add_argument('-p', '--priority', action='store_true', help='Sort tasks by priority')
     task_sort_parser.set_defaults(func=sort_tasks)
 
-    more_parser = subparsers.add_parser('more', help='Show full information of task #ID')
+    more_parser = task_subparsers.add_parser('more', help='Show full information of task #ID')
     more_parser.add_argument('id', help='Id of task to inspect')
     more_parser.set_defaults(func=inspect_task)
 
