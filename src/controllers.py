@@ -1,13 +1,16 @@
-from .models import Task, TaskList
-from .db_connectors import BasicConnector
+from src.models import Task, TaskList
+from src.db_connectors import BasicConnector
 
 
 class Controller:
 
     def __init__(self, connector=None):
-        if not isinstance(connector, BasicConnector):
+        if not connector:
+            self.__connector = BasicConnector()
+        elif not isinstance(connector, BasicConnector):
             raise TypeError('Given object is not BasicConnector')
-        self.__connector = connector
+        else:
+            self.__connector = connector
 
     def add_task(self, task, user_id=None):
 
@@ -32,6 +35,10 @@ class Controller:
         self.__connector.save_task(task)
 
     def delete_task(self, task_id):
+
+        if not isinstance(task_id, int):
+            raise TypeError('Task id is not int')
+
         task = self.__connector.get_task(task_id)
 
         def delete_subtasks(task_id):
@@ -56,11 +63,13 @@ class Controller:
 
     def get_subtasks(self, task_id):
         tasks = self.__connector.get_subtasks(task_id)
-        self.__connector.save_tasks(tasks)
+        self.__connector.save_tasks(tasks, 'a+')
         return tasks
 
     def get_all_tasks(self):
-        pass
+        tasks = self.__connector.get_all_tasks()
+        self.__connector.save_tasks(tasks, 'a+')
+        return tasks
 
     def get_task(self, task_id):
         task = self.__connector.get_task(task_id)
@@ -93,12 +102,12 @@ class Controller:
 
     def get_user_task_lists(self, user_id):
         lists = self.__connector.get_user_task_lists(user_id)
-        self.__connector.save_task_lists(lists)
+        self.__connector.save_task_lists(lists, 'a+')
         return lists
 
     def get_task_list_tasks(self, task_list_id):
         tasks = self.__connector.get_task_list_tasks(task_list_id)
-        self.__connector.save_tasks(tasks)
+        self.__connector.save_tasks(tasks, 'a+')
         return tasks
 
     def change_connector(self, connector):
@@ -114,26 +123,28 @@ class Controller:
             'title': lambda task: task.title,
             'deadline': lambda task: task.deadline,
             'priority': lambda task: task.priority}
-        if sort_type in sorts:
-            tasks = self.__connector.get_all_tasks()
-            tasks.sort(key=sorts[sort_type])
-            self.__connector.save_tasks(tasks)
-
-            def sort_subtasks(task_id):
-                subtasks = self.__connector.get_subtasks(task_id)
-                if not subtasks or not len(subtasks):
-                    return
-                subtasks.sort(key=sorts[sort_type])
-                self.__connector.save_tasks(subtasks)
-                for subtask in subtasks:
-                    sort_subtasks(subtask.id)
-
-            for task in tasks:
-                sort_subtasks(task)
-
-            return tasks
-            # self.logger.info('Tasks sorted by ' + str(sort_type))
-        else:
+        if sort_type not in sorts:
             # self.logger.error('Cannot sort with parameter ' + str(sort_type))
             raise KeyError('No such sort type')
+        tasks = self.__connector.get_all_tasks()
+        tasks.sort(key=sorts[sort_type])
+        self.__connector.save_tasks(tasks, 'a+')
 
+        def sort_subtasks(task_id):
+            subtasks = self.__connector.get_subtasks(task_id)
+            if not subtasks or not len(subtasks):
+                return
+            subtasks.sort(key=sorts[sort_type])
+            self.__connector.save_tasks(subtasks, 'a+')
+            for subtask in subtasks:
+                sort_subtasks(subtask.id)
+
+        for task in tasks:
+            sort_subtasks(task)
+
+        # self.logger.info('Tasks sorted by ' + str(sort_type))
+
+        return tasks
+
+    def get_all_users(self):
+        return self.__connector.get_all_users()

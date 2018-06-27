@@ -38,7 +38,7 @@ class Task:
         self.__id = val
 
     def __str__(self):
-        return self.title
+        return '#' + str(self.id) + ' ' + self.title
 
 
 class TaskList:

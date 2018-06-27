@@ -41,6 +41,10 @@ def add_task(args):
     deadline = args.deadline
     period = args.period
     try:
+        controller = Controller()
+        task = Task(title=name, tags=tags, description=description,
+                    parent_id=parent_id, priority=priority, period_val=period)
+        controller.add_task(task)
         application.add_task(name, description, tags, priority, parent_id, deadline, period)
         print('Added successfully')
     except Exception as e:
@@ -172,8 +176,11 @@ def print_tasks(args):
     elif args.failed:
         mode = 'failed'
     try:
-        for task in application.get_task_list(mode):
-            print(task)
+        controller = Controller()
+        for task in controller.get_all_tasks():
+            print(task.title)
+        #for task in application.get_task_list(mode):
+        #    print(task)
     except AttributeError as e:
         print(e)
 

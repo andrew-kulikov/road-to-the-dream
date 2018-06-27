@@ -1,12 +1,12 @@
-from .models import TaskList, Task
+from src.models import TaskList, Task
 import jsonpickle
 import os
 
 
 class BasicConnector:
 
-    __DEFAULT_TASKS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/tasks.json'
-    __DEFAULT_TASK_LISTS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/task_lists.json'
+    __DEFAULT_TASKS_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tasks.json')
+    __DEFAULT_TASK_LISTS_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'task_lists.json')
 
     def __init__(self, tasks_file=None, task_lists_file=None):
         self.tasks_file = tasks_file
@@ -16,11 +16,18 @@ class BasicConnector:
         if not task_lists_file:
             self.task_lists_file = self.__DEFAULT_TASK_LISTS_FILE
 
+        if not os.path.exists(self.tasks_file):
+            f = open(self.tasks_file, 'w')
+            f.close()
+        if not os.path.exists(self.task_lists_file):
+            f = open(self.task_lists_file, 'w')
+            f.close()
+
     def save_task(self, task):
         if not isinstance(task, Task):
             return TypeError('Given object is not Task')
         with open(self.tasks_file, 'a+') as f:
-            f.write(jsonpickle.encode(task))
+            f.write(jsonpickle.encode(task) + '\n')
 
     def get_task(self, task_id):
         tasks = []
@@ -40,10 +47,10 @@ class BasicConnector:
 
         return good_task
 
-    def save_tasks(self, tasks):
-        with open(self.tasks_file, 'w') as f:
+    def save_tasks(self, tasks, mode='w'):
+        with open(self.tasks_file, mode) as f:
             for task in tasks:
-                f.write(jsonpickle.encode(task))
+                f.write(jsonpickle.encode(task) + '\n')
 
     def save_task_list(self, task_list):
         if not isinstance(task_list, TaskList):
@@ -69,8 +76,8 @@ class BasicConnector:
 
         return good_task_list
 
-    def save_task_lists(self, task_lists):
-        with open(self.task_lists_file, 'w') as f:
+    def save_task_lists(self, task_lists, mode='w'):
+        with open(self.task_lists_file, mode) as f:
             for task_list in task_lists:
                 f.write(jsonpickle.encode(task_list))
 
@@ -79,9 +86,7 @@ class BasicConnector:
         with open(self.tasks_file, 'r+') as f:
             for line in f:
                 task = jsonpickle.decode(line)
-                if task.id != next_id:
-                    break
-                next_id += 1
+                next_id = max(next_id, task.id + 1)
         return next_id
 
     def get_next_task_list_id(self):
@@ -89,9 +94,7 @@ class BasicConnector:
         with open(self.task_lists_file, 'r+') as f:
             for line in f:
                 task_list = jsonpickle.decode(line)
-                if task_list.id != next_id:
-                    break
-                next_id += 1
+                next_id = max(next_id, task_list.id + 1)
         return next_id
 
     def get_user_task_lists(self, user_id):
@@ -115,7 +118,7 @@ class BasicConnector:
         with open(self.tasks_file, 'r+') as f:
             for line in f:
                 task = jsonpickle.decode(line)
-                if task.parent_id == task_id:
+                if task.parent_id and task.parent_id == task_id:
                     subtasks.append(task)
                 else:
                     other_tasks.append(task)
@@ -156,3 +159,15 @@ class BasicConnector:
 
     def get_user_tasks(self):
         pass
+
+    def get_all_users(self):
+        users = set()
+        with open(self.tasks_file, 'r+') as f:
+            for line in f:
+                task = jsonpickle.decode(line)
+                if task.created_user:
+                    users.add(task.created_user)
+                if task.completed_user:
+                    users.add(task.completed_user)
+
+        return users
