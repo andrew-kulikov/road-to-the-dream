@@ -30,3 +30,14 @@ To get help enter
 ```
 rd -h
 ```
+
+## Python library usage
+
+To use rd library in your python program simply import library.
+
+```python
+>>> import rd_tracker
+>>> help(rd_tracker)
+```
+
+In documentation you can get all information about main library instances and classes.
