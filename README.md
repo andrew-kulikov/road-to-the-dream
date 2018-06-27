@@ -21,8 +21,12 @@ All described packages will be installed at your computer.
 
 To work with console application, enter command starts from rd:
 
+```
 rd ...
+```
 
 To get help enter
 
+```
 rd -h
+```
