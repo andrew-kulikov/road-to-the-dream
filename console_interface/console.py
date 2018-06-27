@@ -1,6 +1,5 @@
-from src import Task, TaskList, User, Application
 import argparse
-import jsonpickle
+from src import Task, TaskList, Controller, BasicConnector
 
 
 def login(args):

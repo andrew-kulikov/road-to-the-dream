@@ -21,6 +21,8 @@ class Controller:
 
         if task.parent_id:
             parent = self.__connector.get_task(task.parent_id)
+            if not task.task_list:
+                task.task_list = parent.task_list
             if parent.tast_list != task.task_list:
                 self.__connector.save_task(parent)
                 raise Exception('Tasks must be in one task list')
@@ -29,42 +31,109 @@ class Controller:
 
         self.__connector.save_task(task)
 
-    def delete_task(self):
-        pass
+    def delete_task(self, task_id):
+        task = self.__connector.get_task(task_id)
 
-    def add_task_list(self):
-        pass
+        def delete_subtasks(task_id):
+            subtasks = self.__connector.get_subtasks(task_id)
+            if not subtasks or not len(subtasks):
+                return
+            for subtask in subtasks:
+                delete_subtasks(subtask.id)
 
-    def delete_task_list(self):
-        pass
+        delete_subtasks(task.id)
 
-    def get_sub_tasks(self):
-        pass
+    def add_task_list(self, task_list):
+        if not isinstance(task_list, TaskList):
+            raise TypeError('Given object is not TaskList')
+
+        task_list.id = self.__connector.get_next_task_list_id()
+
+        self.__connector.save_task_list(task_list)
+
+    def delete_task_list(self, task_list_id):
+        task_list = self.__connector.get_task_list(task_list_id)
+
+    def get_subtasks(self, task_id):
+        tasks = self.__connector.get_subtasks(task_id)
+        self.__connector.save_tasks(tasks)
+        return tasks
 
     def get_all_tasks(self):
         pass
 
-    def add_sub_task(self):
+    def get_task(self, task_id):
+        task = self.__connector.get_task(task_id)
+        self.__connector.save_task(task)
+        return task
+
+    def complete_task(self, task_id):
+        task = self.__connector.get_task(task_id)
+        self.__connector.save_task(task)
+
+        def complete_subtasks(task_id):
+            subtasks = self.__connector.get_subtasks(task_id)
+            if not subtasks or not len(subtasks):
+                return
+            for subtask in subtasks:
+                subtask.status = 'C'
+                self.__connector.save_task(subtask)
+                complete_subtasks(subtask.id)
+
+        complete_subtasks(task.id)
+
+    def edit_task(self, task_id, attrs):
         pass
 
-    def get_task(self):
+    def edit_task_list(self, task_list_id, attrs):
         pass
 
-    def edit_task(self):
+    def invite_user(self, task_list_id, user_id):
         pass
 
-    def edit_task_list(self):
-        pass
+    def get_user_task_lists(self, user_id):
+        lists = self.__connector.get_user_task_lists(user_id)
+        self.__connector.save_task_lists(lists)
+        return lists
 
-    def invite_user(self):
-        pass
+    def get_task_list_tasks(self, task_list_id):
+        tasks = self.__connector.get_task_list_tasks(task_list_id)
+        self.__connector.save_tasks(tasks)
+        return tasks
 
-    def get_user_task_lists(self):
-        pass
+    def change_connector(self, connector):
+        self.__connector = connector
 
-    def get_task_list_tasks(self):
-        pass
+    def add_task_list_user(self, task_list_id, user_id):
+        task_list = self.__connector.get_task_list(task_list_id)
+        task_list.users.append(user_id)
+        self.__connector.save_task_list(task_list)
 
-    def change_connector(self):
-        pass
+    def sort_tasks(self, sort_type):
+        sorts = {
+            'title': lambda task: task.title,
+            'deadline': lambda task: task.deadline,
+            'priority': lambda task: task.priority}
+        if sort_type in sorts:
+            tasks = self.__connector.get_all_tasks()
+            tasks.sort(key=sorts[sort_type])
+            self.__connector.save_tasks(tasks)
+
+            def sort_subtasks(task_id):
+                subtasks = self.__connector.get_subtasks(task_id)
+                if not subtasks or not len(subtasks):
+                    return
+                subtasks.sort(key=sorts[sort_type])
+                self.__connector.save_tasks(subtasks)
+                for subtask in subtasks:
+                    sort_subtasks(subtask.id)
+
+            for task in tasks:
+                sort_subtasks(task)
+
+            return tasks
+            # self.logger.info('Tasks sorted by ' + str(sort_type))
+        else:
+            # self.logger.error('Cannot sort with parameter ' + str(sort_type))
+            raise KeyError('No such sort type')
 

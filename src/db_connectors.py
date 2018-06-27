@@ -106,4 +106,53 @@ class BasicConnector:
                 user_lists.append(task_list)
 
         self.save_tasks(other_lists)
+
         return user_lists
+
+    def get_subtasks(self, task_id):
+        subtasks = []
+        other_tasks = []
+        with open(self.tasks_file, 'r+') as f:
+            for line in f:
+                task = jsonpickle.decode(line)
+                if task.parent_id == task_id:
+                    subtasks.append(task)
+                else:
+                    other_tasks.append(task)
+
+        self.save_tasks(other_tasks)
+
+        return subtasks
+
+    def get_task_list_tasks(self, task_list_id):
+        task_list_tasks = []
+        other_tasks = []
+        with open(self.tasks_file, 'r+') as f:
+            for line in f:
+                task = jsonpickle.decode(line)
+                if task.task_list == task_list_id:
+                    task_list_tasks.append(task)
+                else:
+                    other_tasks.append(task)
+
+        self.save_tasks(other_tasks)
+
+        return task_list_tasks
+
+    def get_all_tasks(self):
+        root_tasks = []
+        other_tasks = []
+        with open(self.tasks_file, 'r+') as f:
+            for line in f:
+                task = jsonpickle.decode(line)
+                if not task.parent_id:
+                    root_tasks.append(task)
+                else:
+                    other_tasks.append(task)
+
+        self.save_tasks(other_tasks)
+
+        return root_tasks
+
+    def get_user_tasks(self):
+        pass
