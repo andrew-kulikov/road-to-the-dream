@@ -1,10 +1,14 @@
 import unittest
-from rd_tracker import Task, TaskList, User, TaskStatus
+from rd_tracker import Task, TaskList, Controller, BasicConnector
 import random
 from datetime import datetime
 
 
 class TestTaskMethods(unittest.TestCase):
+
+    def setUp(self):
+        self.connector = BasicConnector()
+        self.controller = Controller(self.connector)
 
     def test_create(self):
         task = Task()
@@ -16,9 +20,35 @@ class TestTaskMethods(unittest.TestCase):
         self.assertEquals(child.parent_id, parent.id)
 
     def test_deadline(self):
-        task = Task(name='Good task', description='Simple task', end_date='20.05.2018 15:00')
+        task = Task(title='Good task', description='Simple task',
+                    deadline=datetime.strptime('20.05.2018 15:00', '%d.%m.%Y %H:%M'))
         self.assertEquals(task.deadline, datetime.strptime('20.05.2018 15:00', '%d.%m.%Y %H:%M'))
-        self.assertRaises(AttributeError, task.change, deadline='10.05.2018 15:00')
+
+    def test_create_list(self):
+        task_list = TaskList()
+        list_id = self.controller.add_task_list(task_list)
+        self.assertIsInstance(list_id, int)
+        self.assertEquals(list_id, 0)
+
+    def test_add_task(self):
+        task = Task(title='Task1', description='ssfdf', tags=['lol', 'kek'])
+        free_id = self.connector.get_next_task_id()
+        task_id = self.controller.add_task(task)
+        self.assertIsInstance(task_id, int)
+        self.assertEquals(task_id, free_id)
+        task = self.controller.get_task(task_id)
+        self.assertIsNotNone(task)
+        self.assertIsInstance(task, Task)
+        self.assertEquals(task.id, free_id)
+        self.assertEquals(task.title, 'Task1')
+    """
+    def test_task_change(self):
+        tasks = TaskList()
+        task = Task(description='ssfdf', tags=['lol', 'kek'])
+        tasks.add_task(task)
+        tasks.tasks[task.id].tags = ['beep']
+        self.assertEquals(task.tags, ['beep'])
+    """
 
 
 if __name__ == '__main__':
