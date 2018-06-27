@@ -22,6 +22,8 @@ class Task:
         self.task_list = task_list
         self.priority = priority
         self.status = status
+        if not status:
+            self.status = 'pending'
         self.repeat_days = repeat_days
         self.period_count = period_count
         self.period_val = period_val

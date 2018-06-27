@@ -26,8 +26,9 @@ class Controller:
             parent = self.__connector.get_task(task.parent_id)
             if not task.task_list:
                 task.task_list = parent.task_list
-            if parent.tast_list != task.task_list:
+            if parent.task_list != task.task_list:
                 self.__connector.save_task(parent)
+                self.__connector.save_task(task)
                 raise Exception('Tasks must be in one task list')
             # user in task list
             self.__connector.save_task(parent)

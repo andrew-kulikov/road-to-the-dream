@@ -40,16 +40,19 @@ def add_task(args):
     tags = args.tags
     description = args.description
     parent_id = args.parent
+    if parent_id:
+        parent_id = int(parent_id)
     priority = args.priority
     deadline = args.deadline
+    if deadline:
+        deadline = parsers.parse_date(deadline)
     period = args.period
     try:
         controller = Controller()
         task = Task(title=name, tags=tags, description=description,
                     parent_id=parent_id, priority=priority, period_val=period,
-                    deadline=to)
+                    deadline=deadline)
         controller.add_task(task)
-        #application.add_task(name, description, tags, priority, parent_id, deadline, period)
         print('Added successfully')
     except Exception as e:
         print(e)
@@ -62,6 +65,8 @@ def edit_task(args):
     description = args.description
     priority = args.priority
     deadline = args.deadline
+    if deadline:
+        deadline = parsers.parse_date(deadline)
     period = args.period
     try:
         application.edit_task(task_id=task_id, name=name, description=description, tags=tags,
@@ -113,33 +118,6 @@ def add_project(args):
         print(e)
 
 
-def edit_project_task(args):
-    project_id = args.project_id
-    task_id = args.id
-    name = args.name
-    tags = args.tags
-    description = args.description
-    priority = args.priority
-    deadline = args.deadline
-    period = args.period
-    try:
-        application.edit_project_task(task_id, name, description, tags, deadline=deadline,
-                                      priority=priority, project_id=project_id, period=period)
-        print('Edited successfully')
-    except Exception as e:
-        print(e)
-
-
-def complete_project_task(args):
-    project_id = args.project_id
-    task_id = args.task_id
-    try:
-        application.complete_project_task(task_id, project_id)
-        print('Completed successfully')
-    except Exception as e:
-        print(e)
-
-
 def print_tasks(args):
     mode = 'pending'
     if args.completed:
@@ -162,13 +140,15 @@ def inspect_task(args):
 
 def print_project_tasks(args):
     mode = 'pending'
-    id = args.project_id
+    list_id = args.project_id
     if args.completed:
         mode = 'completed'
     elif args.failed:
         mode = 'failed'
     try:
-        for task in application.get_project_task_list(mode, id):
+        controller = Controller()
+        tasks = controller.get_task_list_tasks(list_id)
+        for task in tasks:
             print(task)
     except Exception as e:
         print(e)
@@ -241,7 +221,7 @@ def parse_args():
     add_parser.add_argument('-d', '--description', help='Task description', default='', required=False)
     add_parser.add_argument('-t', '--tags', help='Task tags', nargs='+', required=False)
     add_parser.add_argument('-r', '--priority', type=int, help='Task priority (0-9). 0 - highest priority', default=0)
-    add_parser.add_argument('-p', '--parent', help='ID of parent task', default=0)
+    add_parser.add_argument('-p', '--parent', help='ID of parent task', default=None)
     add_parser.add_argument('-e', '--deadline', help='Date of deadline in format [DD.MM.YYYY HH:MM]', default=None)
     add_parser.add_argument('-pe', '--period',
                             help='Period of repeating in format d - day; w - week; m - month; y - year', default=None)
