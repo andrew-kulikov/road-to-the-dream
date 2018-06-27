@@ -55,7 +55,7 @@ class BasicConnector:
     def save_task_list(self, task_list):
         if not isinstance(task_list, TaskList):
             return TypeError('Given object is not TaskList')
-        with open(self.tasks_file, 'a+') as f:
+        with open(self.task_lists_file, 'a+') as f:
             f.write(jsonpickle.encode(task_list))
 
     def get_task_list(self, task_list_id):
