@@ -32,6 +32,7 @@ Public methods
 
 from rd_tracker.models import Task, TaskList
 from rd_tracker.db_connectors import BasicConnector
+from dateutil.relativedelta import *
 
 
 class Controller:
@@ -136,19 +137,44 @@ class Controller:
         task = self.__connector.get_task(task_id)
         self.__connector.save_task(task)
 
-        def complete_subtasks(task_id):
+        def set_subtasks_status(task_id, status='completed'):
             subtasks = self.__connector.get_subtasks(task_id)
             if not subtasks or not len(subtasks):
                 return
             for subtask in subtasks:
                 subtask.status = 'C'
                 self.__connector.save_task(subtask)
-                complete_subtasks(subtask.id)
+                set_subtasks_status(subtask.id, status)
 
-        complete_subtasks(task.id)
+        if task.period_val:
+            set_subtasks_status(task.id, 'pending')
+            if task.period_val == 'D':
+                task.deadline += relativedelta(days=+task.period_count)
+            elif task.period_val == 'W':
+                if task.repeat_days and len(task.repeat_days):
+                    last_weekday = task.deadline.weekday()
+                    days = [MO, TU, WE, TH, FR, SA, SU]
+                    new_week = True
+                    for day in task.repeat_days:
+                        if day - 1 > last_weekday:
+                            new_week = False
+                            task.deadline += relativedelta(weekday=days[day - 1])
+                            break
+                    if new_week:
+                        first_day_number = task.repeat_days[0] - 1
+                        task.deadline += relativedelta(weeks=task.period_count - 1, weekday=days[first_day_number])
+                else:
+                    task.deadline += relativedelta(weeks=+task.period_count)
+            elif task.period_val == 'M':
+                task.deadline += relativedelta(months=+task.period_count)
+            elif task.period_val == 'Y':
+                task.deadline += relativedelta(years=+task.period_count)
+        else:
+            set_subtasks_status(task.id)
 
     def edit_task(self, task_id, attrs):
-        pass
+        task = self.__connector.get_task(task_id)
+        
 
     def edit_task_list(self, task_list_id, attrs):
         task_list = self.__connector.get_task_list(task_list_id)

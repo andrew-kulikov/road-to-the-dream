@@ -41,3 +41,13 @@ To use rd library in your python program simply import library.
 ```
 
 In documentation you can get all information about main library instances and classes.
+
+## Library testing
+
+You can test library functionality by running native tests. To run tests, just open the command window and enter command below:
+
+```
+python setup.py test
+```
+
+You can see test rusults on your screen. You can also add your own tests in file tests/lib_tests.py.
