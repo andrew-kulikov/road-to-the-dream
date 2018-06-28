@@ -59,7 +59,7 @@ def add_task(args):
 
 
 def edit_task(args):
-
+    args.id = int(args.id)
     if args.deadline:
         args.deadline = parsers.parse_date(args.deadline)
 
@@ -228,7 +228,7 @@ def parse_args():
 
     edit_parser = task_subparsers.add_parser('edit', help='Edit task with selected id')
     edit_parser.add_argument('id', help='Task id')
-    edit_parser.add_argument('-n', '--name', help='New task name', default=None)
+    edit_parser.add_argument('-n', '--title', help='New task title', default=None)
     edit_parser.add_argument('-d', '--description', help='New task description', default=None)
     edit_parser.add_argument('-t', '--tags', help='New task tags', nargs='+', default=None)
     edit_parser.add_argument('-r', '--priority', type=int,

@@ -113,17 +113,35 @@ class Controller:
         return task_list.id
 
     def delete_task_list(self, task_list_id):
+        """Remove task list from database with all tasks.
+
+        :param task_list_id: id of list to delete.
+        :return: None
+        :raises
+        'KeyError': if task list with given id does not exist.
+        """
         task_list = self.__connector.get_task_list(task_list_id)
         tasks = self.get_task_list_tasks(task_list.id)
         for task in tasks:
             self.delete_task(task.id)
 
     def get_subtasks(self, task_id):
+        """Get all subtasks that have parent_id equals to given task_id.
+
+        :param task_id: id of task to get all subtasks.
+        :return:
+        :raises
+        'KeyError': if task with given id does not exist.
+        """
         tasks = self.__connector.get_subtasks(task_id)
         self.__connector.save_tasks(tasks, 'a+')
         return tasks
 
     def get_all_tasks(self):
+        """Get all tasks (except subtasks) in database.
+
+        :return: list of all tasks.
+        """
         tasks = self.__connector.get_all_tasks()
         self.__connector.save_tasks(tasks, 'a+')
         return tasks
@@ -174,7 +192,9 @@ class Controller:
 
     def edit_task(self, task_id, attrs):
         task = self.__connector.get_task(task_id)
-        
+        if 'title' in attrs:
+            task.title = attrs['title']
+        self.__connector.save_task(task)
 
     def edit_task_list(self, task_list_id, attrs):
         task_list = self.__connector.get_task_list(task_list_id)

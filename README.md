@@ -15,20 +15,22 @@ Package contains:
 
 To install this package you need run terminal, go to the package folder and simply enter command:
 
+```
 python setup.py install
+```
 
 All described packages will be installed at your computer.
 
-To work with console application, enter command starts from rd:
+To work with console application, enter command starts from rtd:
 
 ```
-rd ...
+rtd ...
 ```
 
 To get help enter
 
 ```
-rd -h
+rtd -h
 ```
 
 ## Python library usage
