@@ -10,6 +10,9 @@ All methods have similar structure:
 
 Database communication interface is represented by __connector.
 
+Module uses:
+    dateutil.relativedelta: helps with issues with periodic tasks completion.
+
 Public methods
     'add_task': adds task in database via connector.
     'delete_task': remove task with all subtasks from database.
@@ -32,7 +35,7 @@ Public methods
 
 from rd_tracker.models import Task, TaskList
 from rd_tracker.db_connectors import BasicConnector
-from dateutil.relativedelta import *
+from dateutil.relativedelta import relativedelta, MO, TH, TU, SA, SU, FR, WE
 
 
 class Controller:
@@ -129,7 +132,7 @@ class Controller:
         """Get all subtasks that have parent_id equals to given task_id.
 
         :param task_id: id of task to get all subtasks.
-        :return:
+        :return: list of subtasks.
         :raises
         'KeyError': if task with given id does not exist.
         """
@@ -147,15 +150,35 @@ class Controller:
         return tasks
 
     def get_task(self, task_id):
+        """Get task with given id from database.
+
+        :param task_id: id of task to pick from db.
+        :return: task with given id.
+        :raises
+        'KeyError': if task was not found in database.
+        """
         task = self.__connector.get_task(task_id)
         self.__connector.save_task(task)
         return task
 
     def complete_task(self, task_id):
+        """Complete tasks with all subtasks.
+
+        If task has no period, function will recursively complete all subtasks of given task (their
+        status will be changed to completed).
+        Otherwise, task deadline will shift to the deadline + period_val * period_count. All subtasks
+        in task subtree will be marked as pending.
+
+        :param task_id: id of task to complete.
+        :return: None
+        :raises
+        'KeyError': if task id was not found in the database.
+        """
         task = self.__connector.get_task(task_id)
         self.__connector.save_task(task)
 
         def set_subtasks_status(task_id, status='completed'):
+            # utility function that designed to walk task subtasks tree and change their status.
             subtasks = self.__connector.get_subtasks(task_id)
             if not subtasks or not len(subtasks):
                 return
@@ -165,10 +188,12 @@ class Controller:
                 set_subtasks_status(subtask.id, status)
 
         if task.period_val:
+            # if task hasperiod, we change deadline and mark all subtasks as pending
             set_subtasks_status(task.id, 'pending')
             if task.period_val == 'D':
                 task.deadline += relativedelta(days=+task.period_count)
             elif task.period_val == 'W':
+                # check for days of week if period is week
                 if task.repeat_days and len(task.repeat_days):
                     last_weekday = task.deadline.weekday()
                     days = [MO, TU, WE, TH, FR, SA, SU]
@@ -188,9 +213,16 @@ class Controller:
             elif task.period_val == 'Y':
                 task.deadline += relativedelta(years=+task.period_count)
         else:
+            # if task has no period, just mark all subtasks as completed
             set_subtasks_status(task.id)
 
     def edit_task(self, task_id, attrs):
+        """
+
+        :param task_id:
+        :param attrs:
+        :return:
+        """
         task = self.__connector.get_task(task_id)
         if 'title' in attrs:
             task.title = attrs['title']
