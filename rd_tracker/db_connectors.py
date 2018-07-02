@@ -1,9 +1,43 @@
+"""db_connectors module
+
+This module contains classes that implements interface to communicate with databases.
+
+Public classes:
+
+'BasicConnector': designed to provide communication with simple file database.
+"""
+
 from rd_tracker.models import TaskList, Task
 import jsonpickle
 import os
 
 
 class BasicConnector:
+    """
+    Class that provides communication with simple database built on json files.
+
+    Attributes:
+        tasks_file(str): path to file with tasks.
+        task_lists_file(str):  path to file with task lists.
+
+    Public methods:
+        save_task: save task into the file.
+        get_task: take task out of the file.
+        save_tasks: save all tasks into the file.
+        save_task_list: save task list into the file.
+        get_task_list: take task list from the file.
+        save_task_lists: save all task lists into the file.
+        get_next_task_id: return free task id.
+        get_next_task_list_id: return free task list id.
+        get_user_task_lists: return all task lists of given user.
+        get_subtasks: get all subtasks of given task.
+        get_task_list_tasks: get all tasks in given taks list.
+        get_all_tasks: get all tasks in database.
+        get_user_tasks: get all tasks of given user.
+        get_all_users: get all users in database.
+
+
+    """
 
     __DEFAULT_TASKS_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'tasks.json')
     __DEFAULT_TASK_LISTS_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'task_lists.json')

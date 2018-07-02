@@ -131,7 +131,9 @@ def print_tasks(args):
 
 def inspect_task(args):
     task_id = args.id
-    print(application.get_full_task_info(task_id))
+    controller = Controller()
+    task = controller.get_task(task_id)
+    print(task)
 
 
 def print_project_tasks(args):
