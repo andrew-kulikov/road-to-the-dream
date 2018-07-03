@@ -33,9 +33,10 @@ Public methods
     'get_all_users': get all users that at least once created or completed task.
 """
 
-from rd_tracker.models import Task, TaskList
-from rd_tracker.db_connectors import BasicConnector
 from dateutil.relativedelta import relativedelta, MO, TH, TU, SA, SU, FR, WE
+
+from rd_tracker.db_connectors import BasicConnector
+from rd_tracker.models import Task, TaskList
 
 
 class Controller:
@@ -345,4 +346,8 @@ class Controller:
         return tasks
 
     def get_all_users(self):
+        """Get list of all users that at least once created or completed task.
+
+        :return: list of ids.
+        """
         return self.__connector.get_all_users()

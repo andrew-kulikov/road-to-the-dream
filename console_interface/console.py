@@ -1,5 +1,6 @@
 import argparse
-from rd_tracker import Task, TaskList, Controller, BasicConnector
+
+from rd_tracker import Task, TaskList, Controller
 from rd_tracker.tools import parsers
 
 

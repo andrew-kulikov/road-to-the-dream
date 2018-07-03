@@ -7,9 +7,11 @@ Public classes:
 'BasicConnector': designed to provide communication with simple file database.
 """
 
-from rd_tracker.models import TaskList, Task
-import jsonpickle
 import os
+
+import jsonpickle
+
+from rd_tracker.models import TaskList, Task
 
 
 class BasicConnector:
@@ -58,12 +60,28 @@ class BasicConnector:
             f.close()
 
     def save_task(self, task):
+        """Save given task in tasks file.
+
+        Task will be converted into json format and appended to the file.
+
+        :param task: task to save.
+        :return:
+        :raises
+        'TypeError': if given object is not `Task`.
+        """
         if not isinstance(task, Task):
             return TypeError('Given object is not Task')
         with open(self.tasks_file, 'a+') as f:
             f.write(jsonpickle.encode(task) + '\n')
 
     def get_task(self, task_id):
+        """Get task with given id from file.
+
+        :param task_id: id of task to pick from file.
+        :return: task with given id.
+        :raises
+        'KeyError': if task was not found in database.
+        """
         tasks = []
         good_task = None
         with open(self.tasks_file, 'r+') as f:
@@ -82,17 +100,40 @@ class BasicConnector:
         return good_task
 
     def save_tasks(self, tasks, mode='w'):
+        """Save all tasks in given list to file.
+
+        :param tasks: list of tasks (each task should have type `Task`)
+        :param mode: if mode == 'a', tasks will be appended to the file,
+        if mode == 'w', tasks file will be overwritten.
+        :return:
+        """
         with open(self.tasks_file, mode) as f:
             for task in tasks:
                 f.write(jsonpickle.encode(task) + '\n')
 
     def save_task_list(self, task_list):
+        """Save given task list in task_lists file.
+
+        Task list will be converted into json format and appended to the file.
+
+        :param task_list: task list to save.
+        :return:
+        :raises
+        'TypeError': if given object is not `TaskList`.
+        """
         if not isinstance(task_list, TaskList):
             return TypeError('Given object is not TaskList')
         with open(self.task_lists_file, 'a+') as f:
             f.write(jsonpickle.encode(task_list) + '\n')
 
     def get_task_list(self, task_list_id):
+        """Get task list with given id from file.
+
+        :param task_list_id: id of task list to pick from file.
+        :return: task list with given id.
+        :raises
+        'KeyError': if task list was not found in database.
+        """
         task_lists = []
         good_task_list = None
         with open(self.task_lists_file, 'r+') as f:
@@ -111,11 +152,24 @@ class BasicConnector:
         return good_task_list
 
     def save_task_lists(self, task_lists, mode='w'):
+        """Save all task lists in given list to file.
+
+        :param task_lists: list of task lists (each element should have type `TaskList`)
+        :param mode: if mode == 'a', task lists will be appended to the file,
+        if mode == 'w', task_lists file will be overwritten.
+        :return:
+        """
         with open(self.task_lists_file, mode) as f:
             for task_list in task_lists:
                 f.write(jsonpickle.encode(task_list) + '\n')
 
     def get_next_task_id(self):
+        """Free task id.
+
+        This function takes maximum task id from db and returns max_id + 1.
+
+        :return: `int` free task id.
+        """
         next_id = 0
         with open(self.tasks_file, 'r+') as f:
             for line in f:
@@ -124,6 +178,12 @@ class BasicConnector:
         return next_id
 
     def get_next_task_list_id(self):
+        """Free task id.
+
+        This function takes maximum task list id from db and returns max_id + 1.
+
+        :return: `int` free task list id.
+        """
         next_id = 0
         with open(self.task_lists_file, 'r+') as f:
             for line in f:
@@ -132,6 +192,11 @@ class BasicConnector:
         return next_id
 
     def get_user_task_lists(self, user_id):
+        """Get all task lists to which user was invited in.
+
+        :param user_id: id of user.
+        :return: list of user task lists.
+        """
         user_lists = []
         other_lists = []
         with open(self.task_lists_file, 'r+') as f:
@@ -147,6 +212,11 @@ class BasicConnector:
         return user_lists
 
     def get_subtasks(self, task_id):
+        """Get all subtasks that have parent_id equals to given task_id.
+
+        :param task_id: id of task to get all subtasks.
+        :return: list of subtasks.
+        """
         subtasks = []
         other_tasks = []
         with open(self.tasks_file, 'r+') as f:
@@ -162,6 +232,11 @@ class BasicConnector:
         return subtasks
 
     def get_task_list_tasks(self, task_list_id):
+        """Get all tasks in task list with given id.
+
+        :param task_list_id: id of task list.
+        :return: list of tasks in task list.
+        """
         task_list_tasks = []
         other_tasks = []
         with open(self.tasks_file, 'r+') as f:
@@ -177,6 +252,10 @@ class BasicConnector:
         return task_list_tasks
 
     def get_all_tasks(self):
+        """Get all tasks (except subtasks) in database.
+
+        :return: list of all tasks.
+        """
         root_tasks = []
         other_tasks = []
         with open(self.tasks_file, 'r+') as f:
@@ -195,6 +274,10 @@ class BasicConnector:
         pass
 
     def get_all_users(self):
+        """Get list of all users that at least once created or completed task.
+
+        :return: list of ids.
+        """
         users = set()
         with open(self.tasks_file, 'r+') as f:
             for line in f:
@@ -203,5 +286,10 @@ class BasicConnector:
                     users.add(task.created_user)
                 if task.completed_user:
                     users.add(task.completed_user)
+
+        with open(self.task_lists_file, 'r+') as f:
+            for line in f:
+                task_list = jsonpickle.decode(line)
+                users.update(task_list.users)
 
         return users

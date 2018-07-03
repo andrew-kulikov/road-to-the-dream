@@ -1,7 +1,7 @@
 import unittest
-from rd_tracker import Task, TaskList, Controller, BasicConnector
-import random
 from datetime import datetime
+
+from rd_tracker import Task, TaskList, Controller, BasicConnector
 
 
 class TestTaskMethods(unittest.TestCase):
