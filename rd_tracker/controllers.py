@@ -217,11 +217,13 @@ class Controller:
             set_subtasks_status(task.id)
 
     def edit_task(self, task_id, attrs):
-        """
+        """Replace attributes of task with given id by new attributes.
 
-        :param task_id:
-        :param attrs:
-        :return:
+        :param task_id: id of task to edit.
+        :param attrs: dict of new attributes in format "attribute name: value". Example: {'title': 'task1'}.
+        :return: None
+        :raises
+        'KeyError': if task with given id does not exist.
         """
         task = self.__connector.get_task(task_id)
         if 'title' in attrs:
@@ -229,6 +231,16 @@ class Controller:
         self.__connector.save_task(task)
 
     def edit_task_list(self, task_list_id, attrs):
+        """Replace attributes of task list with given id by new attributes.
+
+        If new value of `is_private` attribute is True, all users will be removed from task list.
+
+        :param task_list_id: id of task list to edit.
+        :param attrs: dict of new attributes in format "attribute name: value". Example: {'name': 'list1'}.
+        :return: None
+        :raises
+        'KeyError': if task list with given id does not exist.
+        """
         task_list = self.__connector.get_task_list(task_list_id)
         if 'name' in attrs:
             if not isinstance(attrs['name'], str):
@@ -236,48 +248,82 @@ class Controller:
                 raise AttributeError('Given task list name is not not string')
             task_list.name = attrs['name']
 
-        if 'is_private':
+        if 'is_private' in attrs:
             if not isinstance(attrs['is_private'], bool):
                 self.__connector.save_task_list(task_list)
                 raise AttributeError('Given task list privacy is not not bool')
             task_list.is_private = attrs['is_private']
             if task_list.is_private:
+                tasks = self.__connector.get_task_list_tasks(task_list_id)
+                for task in tasks:
+                    task.task_list = None
+                self.__connector.save_tasks(tasks, mode='a')
                 task_list.users.clear()
                 task_list.users.add(task_list.created_user)
 
         self.__connector.save_task_list(task_list)
 
     def invite_user(self, task_list_id, user_id):
+        """Add user with given id to the task list.
+
+        :param task_list_id: Id of task list you want to add user in.
+        :param user_id: Id of user you want to add in task list.
+        :return:
+        :raises
+        'KeyError': if task list with given id does not exist.
+        """
         task_list = self.__connector.get_task_list(task_list_id)
-        task_list.users.add(user_id)
+        task_list.users.append(user_id)
         self.__connector.save_task_list(task_list)
 
     def get_user_task_lists(self, user_id):
+        """Get all task lists to which user was invited in.
+
+        :param user_id: id of user.
+        :return: list of user task lists.
+        """
         lists = self.__connector.get_user_task_lists(user_id)
         self.__connector.save_task_lists(lists, 'a+')
         return lists
 
     def get_task_list_tasks(self, task_list_id):
+        """Get all tasks in task list with given id.
+
+        :param task_list_id: id of task list.
+        :return: list of tasks in task list.
+        :raises
+        'KeyError': if task list with given id does not exist.
+        """
         tasks = self.__connector.get_task_list_tasks(task_list_id)
         self.__connector.save_tasks(tasks, 'a+')
         return tasks
 
     def change_connector(self, connector):
+        """Replace db connector with new connector, new connector should
+        implement BaseConnector interface.
+
+        :param connector: new db connector.
+        :return:
+        """
         self.__connector = connector
 
-    def add_task_list_user(self, task_list_id, user_id):
-        task_list = self.__connector.get_task_list(task_list_id)
-        task_list.users.append(user_id)
-        self.__connector.save_task_list(task_list)
-
     def sort_tasks(self, sort_type):
+        """Sort tasks in given order.
+
+        Sort all tasks and then their subtasks in given order.
+
+        :param sort_type: Task field by which they will be sorted. Possible choices: 'title', 'deadline', 'priority'
+        :return: list of sorted tasks that have parent_id equals to None.
+        :raises
+        'AttributeError': if sort type not in possible choices.
+        """
         sorts = {
             'title': lambda task: task.title,
             'deadline': lambda task: task.deadline,
             'priority': lambda task: task.priority}
         if sort_type not in sorts:
             # self.logger.error('Cannot sort with parameter ' + str(sort_type))
-            raise KeyError('No such sort type')
+            raise AttributeError('No such sort type')
         tasks = self.__connector.get_all_tasks()
         tasks.sort(key=sorts[sort_type])
         self.__connector.save_tasks(tasks, 'a+')
