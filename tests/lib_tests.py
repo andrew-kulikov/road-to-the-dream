@@ -1,13 +1,13 @@
 import unittest
-from rd_tracker import Task, TaskList, Controller, BasicConnector
-import random
 from datetime import datetime
+
+from rd_tracker import Task, TaskList, Controller, BasicConnector
 
 
 class TestTaskMethods(unittest.TestCase):
 
     def setUp(self):
-        self.connector = BasicConnector()
+        self.connector = BasicConnector('lib_tests_tasks.json', 'lib_tests_task_lists.json')
         self.controller = Controller(self.connector)
 
     def test_create(self):
@@ -26,9 +26,10 @@ class TestTaskMethods(unittest.TestCase):
 
     def test_create_list(self):
         task_list = TaskList()
+        next_id = self.connector.get_next_task_list_id()
         list_id = self.controller.add_task_list(task_list)
         self.assertIsInstance(list_id, int)
-        self.assertEquals(list_id, 0)
+        self.assertEquals(list_id, next_id)
 
     def test_add_task(self):
         task = Task(title='Task1', description='ssfdf', tags=['lol', 'kek'])

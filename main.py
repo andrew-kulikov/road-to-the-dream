@@ -1,5 +1,6 @@
 import argparse
-from rd_tracker import Task, TaskList, Controller, BasicConnector
+
+from rd_tracker import Task, TaskList, Controller
 from rd_tracker.tools import parsers
 
 
@@ -59,18 +60,14 @@ def add_task(args):
 
 
 def edit_task(args):
-    name = args.name
-    tags = args.tags
-    task_id = args.id
-    description = args.description
-    priority = args.priority
-    deadline = args.deadline
-    if deadline:
-        deadline = parsers.parse_date(deadline)
-    period = args.period
+    args.id = int(args.id)
+    if args.deadline:
+        args.deadline = parsers.parse_date(args.deadline)
+
     try:
-        application.edit_task(task_id=task_id, name=name, description=description, tags=tags,
-                              priority=priority, deadline=deadline, period=period)
+        controller = Controller()
+        controller.edit_task(args.id, args.__dict__)
+        print(args.__dict__)
         print('Edited successfully')
     except Exception as e:
         print(e)
@@ -135,7 +132,9 @@ def print_tasks(args):
 
 def inspect_task(args):
     task_id = args.id
-    print(application.get_full_task_info(task_id))
+    controller = Controller()
+    task = controller.get_task(task_id)
+    print(task)
 
 
 def print_project_tasks(args):
@@ -231,16 +230,16 @@ def parse_args():
     add_parser.set_defaults(func=add_task)
 
     edit_parser = task_subparsers.add_parser('edit', help='Edit task with selected id')
-    edit_parser.add_argument('-i', '--id', help='Task id', default=0)
-    edit_parser.add_argument('-n', '--name', help='New task name', default=None)
+    edit_parser.add_argument('id', help='Task id')
+    edit_parser.add_argument('-n', '--title', help='New task title', default=None)
     edit_parser.add_argument('-d', '--description', help='New task description', default=None)
     edit_parser.add_argument('-t', '--tags', help='New task tags', nargs='+', default=None)
     edit_parser.add_argument('-r', '--priority', type=int,
                              help='New task priority (0-9). 0 - highest priority', default=None)
     edit_parser.add_argument('-e', '--deadline',
                              help='New deadline of deadline in format [DD.MM.YYYY HH:MM]', default=None)
-    edit_parser.add_argument('-pe', '--period', default=None,
-                             help='New period of repeating in format d - day; w - week; m - month; y - year')
+    edit_parser.add_argument('-pe', '--period', choices=['D', 'W', 'M', 'Y'], default=None,
+                             help='New period of repeating in format D - day; W - week; M - month; Y - year')
     edit_parser.set_defaults(func=edit_task)
 
     complete_parser = task_subparsers.add_parser('complete', help='Complete task #ID')

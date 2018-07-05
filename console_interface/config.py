@@ -8,6 +8,7 @@ Public class:
 
 import os
 from pathlib import Path
+import configparser
 
 
 class Config:
@@ -51,12 +52,12 @@ class Config:
     """
 
     LIBRARY_PATH = os.path.dirname(__file__)
-    __config_path = LIBRARY_PATH + '/configuration.txt'
-    __LOG_PATH = LIBRARY_PATH + '/logger_output/'
-    __DATABASE_FOLDER_PATH = LIBRARY_PATH + '/database/'
+    __config_path = os.path.join(LIBRARY_PATH, 'config.ini')
+    __LOG_PATH = os.path.join(LIBRARY_PATH, 'logs')
+    __DATABASE_FOLDER_PATH = os.path.join(LIBRARY_PATH, 'data')
 
     @classmethod
-    def load_dirs(cls):
+    def load_config(cls):
         """ Load information of program and all settings with configuration.txt
         If file not found, create it.
         If some path is not specified, applies it for it default values
@@ -65,23 +66,25 @@ class Config:
         :return
         'settings': list with different path tos files
         """
-        settings = [None] * 4  # config include 4 settings: path for tasks, messages, output logger and status logger
+        settings = {'log_path': os.path.join(cls.__LOG_PATH, 'log.log'),
+                    'log_on': True,
+                    'tasks_file': os.path.join(cls.__DATABASE_FOLDER_PATH, 'tasks.json'),
+                    'task_lists_file': os.path.join(cls.__DATABASE_FOLDER_PATH, 'task_lists.json'),
+                    }
+        # settings = [None] * 4  # config include 4 settings: path for tasks, messages, output logger and status logger
 
         if Path(cls.__config_path).is_file():
-            with open(cls.__config_path, 'r') as file:
-                i = 0
-                for line in file:
-                    settings[i] = line[:-1]
-                    i += 1
-
-        if not settings[0]:
-            settings[0] = 'logger_output.txt'  # default for logger_output file
-        if not settings[1]:
-            settings[1] = 'new_tasks.txt'  # default for tasks file
-        if not settings[2]:
-            settings[2] = 'messages.txt'  # default for messages file
-        if not settings[3]:
-            settings[3] = 'logger = ON'
+            config = configparser.RawConfigParser()
+            config.read(cls.__config_path)
+            default = config['DEFAULT']
+            if 'log_path' in default:
+                settings['log_path'] = default['log_path']
+            if 'log_on' in default:
+                settings['log_on'] = default['log_on']
+            if 'tasks_file' in default:
+                settings['tasks_file'] = default['tasks_file']
+            if 'task_lists_file' in default:
+                settings['task_lists_file'] = default['task_lists_file']
 
         return settings
 
@@ -108,75 +111,75 @@ class Config:
 
     @classmethod
     def get_logger_output_path(cls):
-        """ Return path file with logger output"""
-        work_dirs = cls.load_dirs()
-        if work_dirs[0].find('/') == -1:
-            return cls.check_file_path(cls.__LOG_PATH + str(work_dirs[0]))
+        """Return path to log file"""
+        settings = cls.load_config()
+        if settings['log_path'].find('/') == -1:
+            return cls.check_file_path(cls.__LOG_PATH + str(settings['log_path']))
         else:
-            return cls.check_file_path(work_dirs[0])
+            return cls.check_file_path(settings['log_path'])
 
     @classmethod
     def get_tasks_file(cls):
         """ Return path file with tasks"""
-        work_dirs = cls.load_dirs()
-        if work_dirs[1].find('/') == -1:
-            return cls.check_file_path(cls.__DATABASE_FOLDER_PATH + str(work_dirs[1]))
+        settings = cls.load_config()
+        if settings['tasks_file'].find('/') == -1:
+            return cls.check_file_path(cls.__DATABASE_FOLDER_PATH + str(settings['tasks_file']))
         else:
-            return cls.check_file_path(work_dirs[1])
+            return cls.check_file_path(settings['tasks_file'])
 
     @classmethod
-    def get_messages_file(cls):
-        """ Return path file with messages"""
-        work_dirs = cls.load_dirs()
-        if work_dirs[2].find('/') == -1:
-            return cls.check_file_path(cls.__DATABASE_FOLDER_PATH + str(work_dirs[2]))
+    def get_task_lists_file(cls):
+        """ Return path file with tasks"""
+        settings = cls.load_config()
+        if settings['task_lists_file'].find('/') == -1:
+            return cls.check_file_path(cls.__DATABASE_FOLDER_PATH + str(settings['task_lists_file']))
         else:
-            return cls.check_file_path(work_dirs[2])
+            return cls.check_file_path(settings['task_lists_file'])
 
     @classmethod
     def get_config_path(cls):
         """ Return path configuration file"""
-        cls.load_dirs()
+        cls.load_config()
         return cls.__config_path
 
     @classmethod
     def set_new_config_path(cls, new_path):
-        """Set new path for configuration file. Default this library/configuration.txt"""
+        """Set new path for configuration file. Default value is config.ini"""
         cls.__config_path = new_path
 
     @classmethod
-    def get_status_logger(cls):
+    def get_logger_status(cls):
         """Return status logger (ON/OFF). Default status = ON
 
-        :raise
-        'Exeption": if status not equal ON/OFF
+        :raises
+        'Exception': if status not equal ON/OFF
         """
-        work_dirs = cls.load_dirs()
-        if len(work_dirs[3].split()) == 3 and work_dirs[3].split()[2] == 'ON':
-            return True
-        elif len(work_dirs[3].split()) == 3 and work_dirs[3].split()[2] == 'OFF':
-            return False
-        else:
-            Exception('Incorrect status logger')
+        settings = cls.load_config()
+        return bool(settings['log_on'])
 
     @classmethod
-    def set_status_logger(cls, status):
-        """Set status logger (ON/OFF). Default status = ON"""
-        work_dirs = cls.load_dirs()
-        if status == 'OFF':
-            work_dirs[3] = 'logger = OFF'
-        else:
-            work_dirs[3] = 'logger = ON'
+    def set_logger_status(cls, log_on=True):
+        """Enable/disable logging.
 
-        cls.save_changes(work_dirs)
+        :param log_on: new logging status.
+        :return:
+        :raises
+        'TypeError': if status is not boolean.
+        """
+        new_settings = cls.load_config()
+        if not isinstance(log_on, bool):
+            raise TypeError('Status must be boolean')
+        new_settings['log_on'] = log_on
+        cls.save_changes(new_settings)
 
     @classmethod
-    def save_changes(cls, work_dirs):
-        """ Save new settings program. Default file = configuration.txt
+    def save_changes(cls, new_config):
+        """Save new settings into config file.
 
-        :param
-        'work_dirs': settings to save file
+        :param new_config: new dict of settings, will be saved in DEFAULT section.
+        :return:
         """
-        with open(cls.__config_path, 'w') as file:
-            for line in work_dirs:
-                file.write(line + '\n')
+        config = configparser.RawConfigParser()
+        config['DEFAULT'] = new_config
+        with open(cls.__config_path, 'w') as config_file:
+            config.write(config_file)

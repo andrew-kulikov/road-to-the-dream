@@ -15,20 +15,22 @@ Package contains:
 
 To install this package you need run terminal, go to the package folder and simply enter command:
 
+```
 python setup.py install
+```
 
 All described packages will be installed at your computer.
 
-To work with console application, enter command starts from rd:
+To work with console application, enter command starts from rtd:
 
 ```
-rd ...
+rtd ...
 ```
 
 To get help enter
 
 ```
-rd -h
+rtd -h
 ```
 
 ## Python library usage
@@ -41,3 +43,13 @@ To use rd library in your python program simply import library.
 ```
 
 In documentation you can get all information about main library instances and classes.
+
+## Library testing
+
+You can test library functionality by running native tests. To run tests, just open the command window and enter command below:
+
+```
+python setup.py test
+```
+
+You can see test rusults on your screen. You can also add your own tests in file tests/lib_tests.py.
