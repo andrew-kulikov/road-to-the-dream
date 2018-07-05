@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Trash </title>
+{% endblock%}
+
+{% block content %}
+<h5>Tasks:</h5>
+<ul>
+    {% for task in tasks %}
+    <li>
+        <a href="{% url 'details' task_id=task.id %}">{{task.title}}</a> : {{task.description}}
+        <form action="{% url 'repair_task' task_id=task.id %}" class="task_form">
+            <input type="submit" class="btn btn-link" value="Repair" />
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

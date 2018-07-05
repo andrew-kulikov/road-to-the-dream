@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    {% block title %}
+    {% endblock %}
+    <link rel="stylesheet" type="text/css" media="screen" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <link href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
+    <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+    <link rel="shortcut icon" href="{% static 'logo.jpg' %}" />
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Our Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/sidebar.css' %}" />
+    <link href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    {% block links %}
+    {% endblock %}
+</head>
+<body>
+<div class="wrapper" style="width: 100%">
+    <!-- Sidebar Holder -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                    Hello, {{ user }}
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <!--li><a href="#">Settings</a></li>
+                    <li><a href="#">Stats</a></li>
+                    <li><a href="#">Help</a></li-->
+                    <li><a href="/accounts/logout/?next={{request_path}}">Sign out</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <ul class="list-unstyled components">
+            <!--p>Dummy Heading</p-->
+            <li class="active">
+                <a href="{% url 'index' %}">All</a>
+            </li>
+            <li>
+                <a href="{% url 'today' %}">Today</a>
+            </li>
+            <li>
+                <a href="{% url 'next_week' %}">Next week</a>
+            </li>
+            <li>
+                <a href="#listsSubmenu" data-toggle="collapse" aria-expanded="false">Lists</a>
+                <ul class="collapse list-unstyled" id="listsSubmenu">
+                    {% for list in task_lists %}
+                    <li><a href="{% url 'list_details' list_id=list.id %}">{{ list.name }}</a></li>
+                    {% endfor %}
+                    <li>
+                        <a href="{% url 'add_list' %}?next={{request_path}}">
+                            <i class="glyphicon glyphicon-plus  "></i>
+                            Add
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#tagsSubmenu" data-toggle="collapse" aria-expanded="false">Tags</a>
+                <ul class="collapse list-unstyled" id="tagsSubmenu">
+                    {% for tag in tags %}
+                    <li><a href="{% url 'tag_details' tag_id=tag.id%}">{{ tag.name }}</a></li>
+                    {% endfor %}
+                    <li>
+                        <a href="{% url 'add_tag' %}?next={{request_path}}">
+                            <i class="glyphicon glyphicon-plus  "></i>
+                            Add
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="{% url 'completed' %}">Completed</a>
+            </li>
+            <li>
+                <a href="{% url 'trash' %}">Trash</a>
+            </li>
+        </ul>
+
+        <!--ul class="list-unstyled CTAs">
+            <li><a href="https://bootstrapious.com/tutorial/files/sidebar.zip" class="download">Download source</a></li>
+            <li><a href="https://bootstrapious.com/p/bootstrap-sidebar" class="article">Back to article</a></li>
+        </ul-->
+    </nav>
+
+    <!-- Page Content Holder -->
+    <div id="content" style="width: 50vw">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<!-- Bootstrap Js CDN -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
+<script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').toggleClass('active');
+        });
+    });
+</script>
+</body>
+</html>

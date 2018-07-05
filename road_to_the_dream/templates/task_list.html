@@ -1,0 +1,52 @@
+<ul class="list-group">
+    <form method="get" class="form-group">
+        <label for="sort_type">Sort by</label>
+        <select class="form-control" name="sort_type" id="sort_type">
+            <option value="deadline">Deadline</option>
+            <option value="priority">Priority</option>
+            <option value="title">Title</option>
+            <option value="created">Creation Date</option>
+        </select>
+        <input type="submit" class="btn btn-success" style="margin-top: 5px ">
+    </form>
+    {% for task in tasks %}
+    <li class="list-group-item">
+        {% if task.period_val != 'N' %}
+        <span class="glyphicon glyphicon-repeat" ></span>
+        {% endif %}
+        <a href="{% url 'details' task_id=task.id %}" {% if task.status == 'O' %} style="color: red" {% endif %}>
+            {{task.title}}
+        </a>
+        {% if task.deadline %} - {{task.deadline}} {% endif %}
+        <div class="btn-group" role="group" aria-label="Basic example" style="float: right;">
+            <a href="{% url 'complete_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Complete</a>
+            {% if task.created_user == user %}
+            <a href="{% url 'edit_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Edit</a>
+            <a href="{% url 'trash_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Trash</a>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% if tasks.has_other_pages %}
+  <ul class="pagination">
+    {% if tasks.has_previous %}
+      <li><a href="?page={{ tasks.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in tasks.paginator.page_range %}
+      {% if tasks.number == i %}
+        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+      {% else %}
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if tasks.has_next %}
+      <li><a href="?page={{ tasks.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+{% endif %}

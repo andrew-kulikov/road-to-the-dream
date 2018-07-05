@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Add task </title>
+{% endblock%}
+
+{% block content %}
+<form action="{% url 'add' %}" method="post">
+    {% csrf_token %}
+    <label for="title">Title</label>
+    <br />
+    <input class="form-control" type="text" name="title" id="title">
+    <br />
+    <label for="description">Description</label>
+    <br />
+    <textarea class="form-control" name="description" id="description" > </textarea>
+    <br />
+    <label for="priority">Priority</label>
+    <select class="form-control" name="priority" id="priority">
+        <option value="0">High</option>
+        <option value="1">Medium</option>
+        <option value="2">Low</option>
+        <option value="-1" selected="">None</option>
+    </select>
+    <br />
+    <div class="form-row field-tags">
+        <div>
+            <label for="id_tags">Tags:</label>
+            <div class="related-widget-wrapper">
+                <select class="form-control" name="tags" id="id_tags" multiple="multiple">
+                    {% for tag in tags %}
+                    <option value="{{ tag.id }}">{{ tag.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
+        </div>
+    </div>
+    <br />
+    <div class="form-row field-tags">
+        <div>
+            <label for="list_id">List:</label>
+            <div class="related-widget-wrapper">
+                <select class="form-control" name="list_id" id="list_id">
+                    {% for list in task_lists %}
+                    <option value="{{ list.id }}">{{ list.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="help">Hold down "Control", or "Command" on a Mac, to select more than one.</div>
+        </div>
+    </div>
+    <br />
+    <div>
+        <label for="deadline">Deadline:</label>
+        <div class="row">
+            <div class='col-sm-6'>
+                <div class="form-group">
+                    <div class='input-group date' id='deadline'>
+                        <input type='text' class="form-control" name="deadline" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                $(function () {
+                    $('#deadline').datetimepicker();
+                });
+            </script>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col col-sm-2">
+            <label for="period">Repeat every:</label>
+            <input type="number" min="1" name="count" class="form-control" style="margin-bottom:10px" value="1">
+            <select class="form-control" name="period" id="period">
+                <option value="D">Day</option>
+                <option value="W">Week</option>
+                <option value="M">Month</option>
+                <option value="Y">Year</option>
+                <option value="N" selected>None</option>
+            </select>
+        </div>
+        <div class="col col-sm-2">
+            <label for="days">Days:</label>
+            <select class="form-control"  name="days" id="days" multiple="multiple">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="7">Sunday</option>
+            </select>
+        </div>
+    </div>
+
+    <br />
+    <input type="submit" class="btn btn-light" value="submit">
+
+    <script>
+        if (top != self) { top.location.replace(self.location.href); }
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-47462200-1', 'eonasdan.github.io');
+        ga('send', 'pageview');
+    </script>
+</form>
+{% endblock%}

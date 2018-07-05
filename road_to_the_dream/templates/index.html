@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Tasks </title>
+{% endblock%}
+
+{% block content %}
+<form action="{% url 'add' %}">
+    <input type="submit" class="btn btn-link" value="Add task">
+</form>
+{% include 'task_list.html' %}
+{% endblock %}

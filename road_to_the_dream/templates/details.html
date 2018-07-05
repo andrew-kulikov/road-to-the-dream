@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Task info </title>
+{% endblock%}
+
+{% block content %}
+<div class="container" style="width: 100%;">
+    <div class="row">
+        <div class="col col-sm-6">
+            <h1>{{task.title}}</h1>
+
+            {% if task.status != 'C' %}
+            <a href="{% url 'complete_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Complete</a>
+            {% else %}
+            <a href="{% url 'repair_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Repair</a>
+            {% endif %}
+            {% if task.created_user == user %}
+            <a href="{% url 'edit_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Edit</a>
+            <a href="{% url 'trash_task' task_id=task.id %}?next={{request_path}}" class="btn btn-link">Trash</a>
+            {% endif %}
+
+            <p>Description:&nbsp {{task.description}} </p>
+            <p>Created:&nbsp {{task.created}} </p>
+            <p>Deadline: &nbsp {{task.deadline}} </p>
+            {% if task.period_val != 'N' %}
+            <p>Repeat every: &nbsp {{task.period_count}} &nbsp {{task.get_period_val_display }}(s) </p>
+            {% endif %}
+            {% if task.period_val == 'W' %}
+            <p>At: &nbsp {{task.repeat_days }} </p>
+            {% endif %}
+            <p>Created user:&nbsp {{task.created_user}} </p>
+            {% if task.status == 'C' %}
+            <p>Completed user:&nbsp {{task.completed_user}} </p>
+            {% endif %}
+            <p>Task list:&nbsp {{task.task_list}} </p>
+            <p>Status:&nbsp {{task.get_status_display}} </p>
+            <p>Priority:&nbsp {{task.get_priority_display}} </p>
+            <h5>Tags:</h5>
+            <ul>
+                {% for tag in task.tags.all %}
+                <li>
+                    {{tag}}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col col-sm-6">
+            <h3>Subtasks:</h3>
+            <form method="post" class="form-group">
+                {% csrf_token %}
+                <label for="subtask_name">Name</label>
+                <div class="input-group">
+                    <input type="text" id="subtask_name" name="subtask_name" class="form-control">
+                    <input type="submit" class="btn btn-success">
+                </div>
+            </form>
+            <hr>
+            <h2>Pending</h2>
+            <ul class="list-group">
+                {% for st in pending_st %}
+                <li>{{st.title}}
+                    <a href="{% url 'complete_subtask' subtask_id=st.id %}" class="btn btn-link">Complete</a>
+                    <a href="{% url 'delete_subtask' subtask_id=st.id %}" class="btn btn-link">Delete</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <hr>
+            <h2>Completed</h2>
+            <ul class="list-group">
+                {% for st in completed_st %}
+                <li>{{st.title}}
+                    <a href="{% url 'repair_subtask' subtask_id=st.id %}" class="btn btn-link">Repair</a>
+                    <a href="{% url 'delete_subtask' subtask_id=st.id %}" class="btn btn-link">Delete</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

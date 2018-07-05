@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Add tasklist </title>
+{% endblock%}
+
+{% block content %}
+<form method="post" class="form-group">
+    {% csrf_token %}
+    <label for="name">Name</label>
+    <br />
+    <input class="form-control" type="text" name="name" id="name" value="{{name}}">
+    <br />
+    <label for="is_private"><input type="checkbox" name="is_private" id="is_private" value="{{is_private}}">Private</label>
+    <br />
+    <input class="btn" type="submit" value="Submit">
+</form>
+{% endblock%}

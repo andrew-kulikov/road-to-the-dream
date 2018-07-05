@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title> RD - Edit tag </title>
+{% endblock%}
+
+{% block content %}
+<form method="post" class="form-group">
+    {% csrf_token %}
+    <label for="name">Name</label>
+    <br />
+    <input class="form-control" type="text" name="name" id="name" value="{{name}}">
+    <br />
+    <input class="btn btn-success" type="submit" value="submit">
+</form>
+{% endblock%}

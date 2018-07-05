@@ -7,5 +7,7 @@ build/
 data/
 log.log
 *__pycache__*
-*.pycs
+*egg*
+*.pyc
 *.json
+
