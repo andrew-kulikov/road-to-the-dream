@@ -10,3 +10,4 @@ log.log
 *egg*
 *.pyc
 *.json
+*.vs

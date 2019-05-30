@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'recognitor',
     'accounts',
     'todolist',
     'multiselectfield',
@@ -129,3 +130,6 @@ STATICFILES_DIRS = [
 ]
 
 DATETIME_PATTERN = '%m/%d/%Y %I:%M %p'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
